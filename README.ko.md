@@ -11,7 +11,7 @@
 - 한국어·영어 화면 문구와 음성 인식 기본 언어, 시간대를 설정합니다.
 - 자체 운영 서버와 AI 제공업체 API 키를 사용합니다. 코드스텝이 운영하는 서버는 필요하지 않습니다.
 
-**현재 상태: 0.1.0 알파.** Chromium·Firefox·WebKit 및 모바일 에뮬레이션의 자동 검사를 제공합니다. 실제 iPhone·Android 기기의 마이크 동작은 아직 검증하지 않았습니다. [검증 범위](docs/compatibility.md#한국어)를 확인하세요.
+**현재 상태: 0.1.1 알파.** Chromium·Firefox·WebKit 및 모바일 에뮬레이션의 자동 검사를 제공합니다. 실제 iPhone·Android 기기의 마이크 동작은 아직 검증하지 않았습니다. [검증 범위](docs/compatibility.md#한국어)를 확인하세요.
 
 ## 실행 영상
 
@@ -64,7 +64,7 @@ npm start
 첫 버전은 npm 레지스트리가 아닌 GitHub에서 설치합니다.
 
 ```sh
-npm install github:codestepteam/browser-assistant#v0.1.0
+npm install github:codestepteam/browser-assistant#v0.1.1
 ```
 
 ```tsx

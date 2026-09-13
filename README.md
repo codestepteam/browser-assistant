@@ -11,7 +11,7 @@ An open-source, self-hosted assistant that **uses your website's rendered UI**. 
 - English and Korean UI, speech recognition defaults, and configurable time zones.
 - Your server and your AI provider API key. No Codestep-hosted backend is required.
 
-**Status: 0.1.0 alpha.** Automated browser and mocked microphone checks cover Chromium, Firefox, WebKit, and mobile emulation. Physical iPhone/Android microphone behavior remains unverified. See [compatibility](docs/compatibility.md).
+**Status: 0.1.1 alpha.** Automated browser and mocked microphone checks cover Chromium, Firefox, WebKit, and mobile emulation. Physical iPhone/Android microphone behavior remains unverified. See [compatibility](docs/compatibility.md).
 
 ## Watch it work
 
@@ -64,7 +64,7 @@ Serve `dist/widget.js` from your server, and expose authenticated assistant rout
 The first release is distributed through GitHub, not the npm registry:
 
 ```sh
-npm install github:codestepteam/browser-assistant#v0.1.0
+npm install github:codestepteam/browser-assistant#v0.1.1
 ```
 
 ```tsx

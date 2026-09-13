@@ -1,11 +1,10 @@
 {
   "name": "@codestepteam/browser-assistant",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "license": "MIT",
   "files": [
     "dist",
-    "examples/index.html",
     "docs",
     "README.md",
     "README.ko.md",
@@ -13,7 +12,9 @@
     ".env.example",
     "THIRD_PARTY_NOTICES.md",
     "SECURITY.md",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "examples/tool-roundtrip.json",
+    "CONTRIBUTING.md"
   ],
   "exports": {
     ".": {

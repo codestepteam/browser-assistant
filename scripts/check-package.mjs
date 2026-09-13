@@ -1,7 +1,13 @@
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, writeFileSync, rmSync } from "node:fs";
+import {
+  mkdtempSync,
+  readFileSync,
+  writeFileSync,
+  rmSync,
+  existsSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { join, resolve, dirname } from "node:path";
 const npm = process.platform === "win32" ? "npm.cmd" : "npm";
 const packOutput = execFileSync(npm, ["pack", "--json", "--ignore-scripts"], {
   encoding: "utf8",
@@ -27,6 +33,18 @@ try {
   );
   const root = join(temp, "node_modules/@codestepteam/browser-assistant");
   const pkg = JSON.parse(readFileSync(join(root, "package.json")));
+  for (const file of packed.files.filter((file) => file.path.endsWith(".md"))) {
+    const content = readFileSync(join(root, file.path), "utf8");
+    for (const match of content.matchAll(/\]\(([^)]+)\)/g)) {
+      const href = match[1].split("#")[0];
+      if (!href || /^(https?:|mailto:)/.test(href)) continue;
+      if (!existsSync(resolve(root, dirname(file.path), href)))
+        throw Error(
+          `Broken packaged documentation link: ${file.path} -> ${href}`,
+        );
+    }
+  }
+
   for (const target of Object.values(pkg.exports))
     for (const file of Object.values(target)) readFileSync(join(root, file));
   execFileSync(

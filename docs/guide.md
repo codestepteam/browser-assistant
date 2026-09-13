@@ -11,8 +11,8 @@ Self-hosting means that no Codestep-hosted backend is required. You still supply
 ## Installation choices
 
 1. Clone the repository and run `npm ci` for the complete server, examples and source.
-2. Install the GitHub tag with `npm install github:codestepteam/browser-assistant#v0.1.0` for a React consumer. Installation from Git runs `prepare` to build the package.
-3. Alternatively download the `.tgz` release asset and run `npm install ./codestepteam-browser-assistant-0.1.0.tgz`; this installs prebuilt files.
+2. Install the GitHub tag with `npm install github:codestepteam/browser-assistant#v0.1.1` for a React consumer. Installation from Git runs `prepare` to build the package.
+3. Alternatively download the `.tgz` release asset and run `npm install ./codestepteam-browser-assistant-0.1.1.tgz`; this installs prebuilt files.
 4. Copy `dist/widget.js` to your own web server for plain HTML. Set its `data-server-url` to your authenticated gateway.
 
 Pin a release tag or release asset. Do not point production installs to a moving default branch. Protocol version 1 clients and servers must be deployed together; `/health` advertises the protocol version. No cross-major compatibility guarantee is made for this alpha.

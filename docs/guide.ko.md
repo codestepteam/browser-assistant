@@ -9,8 +9,8 @@
 자체 운영은 코드스텝 서버가 필요 없다는 뜻입니다. 현재 구현은 OpenAI를 호출하므로 AI 제공업체 API 키가 필요합니다. 오프라인 추론은 구현하지 않았습니다.
 
 - 전체 서버·소스·예제: 저장소를 내려받고 `npm ci`를 실행합니다.
-- React 프로젝트: `npm install github:codestepteam/browser-assistant#v0.1.0`으로 설치합니다. Git 설치 과정에서 `prepare`가 배포 파일을 빌드합니다.
-- 미리 빌드한 패키지: 릴리스의 `.tgz`를 내려받아 `npm install ./codestepteam-browser-assistant-0.1.0.tgz`를 실행합니다.
+- React 프로젝트: `npm install github:codestepteam/browser-assistant#v0.1.1`으로 설치합니다. Git 설치 과정에서 `prepare`가 배포 파일을 빌드합니다.
+- 미리 빌드한 패키지: 릴리스의 `.tgz`를 내려받아 `npm install ./codestepteam-browser-assistant-0.1.1.tgz`를 실행합니다.
 - HTML: `dist/widget.js`를 자기 서버에서 제공하고 인증 경로를 `data-server-url`로 지정합니다.
 
 운영 설치는 릴리스 태그나 릴리스 파일에 고정하세요. 클라이언트·서버 프로토콜 버전은 1이며 `/health`에서 확인할 수 있습니다. 알파 버전에서는 서로 다른 주요 버전의 호환을 보장하지 않습니다.

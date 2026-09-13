@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1 — Packaged documentation
+
+- Include the full tool examples and contribution guide in the installation archive.
+- Check relative documentation links inside a clean package installation.
+
 ## 0.1.0 — Initial self-hosted alpha
 
 - Standalone server, script bundle and React component; clean-package installation check.
