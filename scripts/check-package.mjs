@@ -3,10 +3,12 @@ import { mkdtempSync, readFileSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 const npm = process.platform === "win32" ? "npm.cmd" : "npm";
+const packOutput = execFileSync(npm, ["pack", "--json", "--ignore-scripts"], {
+  encoding: "utf8",
+});
+// Some npm versions print prepare-script output before the final JSON array.
 const packed = JSON.parse(
-  execFileSync(npm, ["pack", "--json", "--ignore-scripts"], {
-    encoding: "utf8",
-  }),
+  packOutput.slice(packOutput.lastIndexOf("\n[") + 1),
 )[0];
 const filename = resolve(packed.filename);
 const temp = mkdtempSync(join(tmpdir(), "browser-assistant-package-"));
