@@ -1,0 +1,93 @@
+{
+  "name": "@codestepteam/browser-assistant",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "MIT",
+  "files": [
+    "dist",
+    "examples/index.html",
+    "docs",
+    "README.md",
+    "README.ko.md",
+    "LICENSE",
+    ".env.example",
+    "THIRD_PARTY_NOTICES.md",
+    "SECURITY.md",
+    "CHANGELOG.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/client/index.d.ts",
+      "import": "./dist/client.js"
+    },
+    "./core": {
+      "types": "./dist/client/core.d.ts",
+      "import": "./dist/core.js"
+    },
+    "./protocol": {
+      "types": "./dist/protocol.d.ts",
+      "import": "./dist/protocol.js"
+    },
+    "./server": {
+      "types": "./dist/server/provider.d.ts",
+      "import": "./dist/server/provider.js"
+    },
+    "./server-app": {
+      "types": "./dist/server/app.d.ts",
+      "import": "./dist/server/app.js"
+    }
+  },
+  "scripts": {
+    "build": "vite build && vite build --config vite.widget.config.ts && tsc -p tsconfig.build.json && tsc -p tsconfig.server.json && vite build --config vite.examples.config.ts",
+    "dev": "vite --config vite.dev.config.ts --host 0.0.0.0 --port 4186 --strictPort",
+    "start": "node --env-file-if-exists=.env dist/server/index.js",
+    "test": "tsx --test tests/*.test.ts",
+    "check": "tsc --noEmit",
+    "dev:api": "node --env-file-if-exists=.env --import tsx src/server/index.ts",
+    "test:browser": "playwright test",
+    "test:package": "node scripts/check-package.mjs",
+    "demo:gateway": "node --env-file-if-exists=.env --import tsx examples/auth-gateway.ts",
+    "prepare": "npm run build",
+    "record:demo": "node --env-file-if-exists=.env --import tsx scripts/record-demo.ts",
+    "test:gateway": "node scripts/check-gateway.mjs",
+    "check:publication": "node scripts/check-publication.mjs",
+    "format": "prettier --write src tests examples scripts *.ts *.json *.md docs knowledge .github",
+    "format:check": "prettier --check src tests examples scripts *.ts *.json *.md docs knowledge .github"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.1.1",
+    "hono": "^4.13.5",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^26.4.1",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.1.1",
+    "prettier": "^3.9.6",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.2"
+  },
+  "description": "Self-hosted voice and chat assistant that operates your website through its rendered UI.",
+  "engines": {
+    "node": ">=22.14.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codestepteam/browser-assistant.git"
+  },
+  "homepage": "https://github.com/codestepteam/browser-assistant#readme",
+  "bugs": {
+    "url": "https://github.com/codestepteam/browser-assistant/issues"
+  }
+}

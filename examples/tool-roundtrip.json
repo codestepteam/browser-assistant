@@ -1,0 +1,382 @@
+{
+  "description": "가상 고객 화면에서 실제 실행한 도구 입출력. 실제 고객 데이터나 업무 API는 사용하지 않았습니다.",
+  "examples": [
+    {
+      "clientCall": {
+        "argumentsJson": "{}",
+        "name": "get_current_view"
+      },
+      "input": {},
+      "name": "get_current_view",
+      "output": {
+        "ok": true,
+        "state": {
+          "view": {
+            "alerts": [
+              "검색 대기"
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "level": 2,
+                    "role": "heading",
+                    "text": "고객 검색"
+                  },
+                  {
+                    "children": [
+                      {
+                        "role": "text",
+                        "text": "고객 이름"
+                      },
+                      {
+                        "actions": [
+                          "fill"
+                        ],
+                        "disabled": false,
+                        "inputType": "text",
+                        "label": "고객 이름",
+                        "name": "고객 이름",
+                        "readOnly": false,
+                        "ref": "e2",
+                        "requiresConfirmation": true,
+                        "role": "textbox",
+                        "value": ""
+                      }
+                    ],
+                    "role": "group"
+                  },
+                  {
+                    "actions": [
+                      "click"
+                    ],
+                    "disabled": false,
+                    "label": "검색",
+                    "name": "검색",
+                    "readOnly": false,
+                    "ref": "e3",
+                    "requiresConfirmation": false,
+                    "role": "button"
+                  },
+                  {
+                    "children": [
+                      {
+                        "role": "text",
+                        "text": "검색 대기"
+                      }
+                    ],
+                    "role": "status"
+                  },
+                  {
+                    "role": "text",
+                    "text": "홍길동 · 301호"
+                  }
+                ],
+                "name": "고객 검색 예제",
+                "ref": "e1",
+                "role": "region",
+                "scrollable": true
+              }
+            ],
+            "loading": false,
+            "revision": "7ad944bde90e3908b2379cd87dd5ee81:1",
+            "scroll": {
+              "dialog": 0,
+              "page": 0
+            },
+            "title": "Browser Assistant example",
+            "truncated": false,
+            "url": "/demo"
+          }
+        }
+      }
+    },
+    {
+      "clientCall": {
+        "argumentsJson": "{\"ref\":\"e2\",\"action\":\"fill\",\"value\":\"홍길동\",\"expectedRevision\":\"7ad944bde90e3908b2379cd87dd5ee81:1\",\"requestId\":\"example-fill-1\"}",
+        "name": "use_element"
+      },
+      "input": {
+        "action": "fill",
+        "expectedRevision": "7ad944bde90e3908b2379cd87dd5ee81:1",
+        "ref": "e2",
+        "requestId": "example-fill-1",
+        "value": "홍길동"
+      },
+      "name": "use_element",
+      "output": {
+        "ok": true,
+        "state": {
+          "view": {
+            "alerts": [
+              "검색 대기"
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "level": 2,
+                    "role": "heading",
+                    "text": "고객 검색"
+                  },
+                  {
+                    "children": [
+                      {
+                        "role": "text",
+                        "text": "고객 이름"
+                      },
+                      {
+                        "actions": [
+                          "fill"
+                        ],
+                        "disabled": false,
+                        "inputType": "text",
+                        "label": "고객 이름",
+                        "name": "고객 이름",
+                        "readOnly": false,
+                        "ref": "e2",
+                        "requiresConfirmation": true,
+                        "role": "textbox",
+                        "value": "홍길동"
+                      }
+                    ],
+                    "role": "group"
+                  },
+                  {
+                    "actions": [
+                      "click"
+                    ],
+                    "disabled": false,
+                    "label": "검색",
+                    "name": "검색",
+                    "readOnly": false,
+                    "ref": "e3",
+                    "requiresConfirmation": false,
+                    "role": "button"
+                  },
+                  {
+                    "children": [
+                      {
+                        "role": "text",
+                        "text": "검색 대기"
+                      }
+                    ],
+                    "role": "status"
+                  },
+                  {
+                    "role": "text",
+                    "text": "홍길동 · 301호"
+                  }
+                ],
+                "name": "고객 검색 예제",
+                "ref": "e1",
+                "role": "region",
+                "scrollable": true
+              }
+            ],
+            "loading": false,
+            "revision": "7ad944bde90e3908b2379cd87dd5ee81:2",
+            "scroll": {
+              "dialog": 0,
+              "page": 0
+            },
+            "title": "Browser Assistant example",
+            "truncated": false,
+            "url": "/demo"
+          }
+        }
+      }
+    },
+    {
+      "clientCall": {
+        "argumentsJson": "{\"ref\":\"e3\",\"action\":\"click\",\"value\":null,\"expectedRevision\":\"7ad944bde90e3908b2379cd87dd5ee81:2\",\"requestId\":\"example-click-1\"}",
+        "name": "use_element"
+      },
+      "input": {
+        "action": "click",
+        "expectedRevision": "7ad944bde90e3908b2379cd87dd5ee81:2",
+        "ref": "e3",
+        "requestId": "example-click-1",
+        "value": null
+      },
+      "name": "use_element",
+      "output": {
+        "ok": true,
+        "state": {
+          "view": {
+            "alerts": [
+              "검색 결과 1건"
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "level": 2,
+                    "role": "heading",
+                    "text": "고객 검색"
+                  },
+                  {
+                    "children": [
+                      {
+                        "role": "text",
+                        "text": "고객 이름"
+                      },
+                      {
+                        "actions": [
+                          "fill"
+                        ],
+                        "disabled": false,
+                        "inputType": "text",
+                        "label": "고객 이름",
+                        "name": "고객 이름",
+                        "readOnly": false,
+                        "ref": "e2",
+                        "requiresConfirmation": true,
+                        "role": "textbox",
+                        "value": "홍길동"
+                      }
+                    ],
+                    "role": "group"
+                  },
+                  {
+                    "actions": [
+                      "click"
+                    ],
+                    "disabled": false,
+                    "label": "검색",
+                    "name": "검색",
+                    "readOnly": false,
+                    "ref": "e3",
+                    "requiresConfirmation": false,
+                    "role": "button"
+                  },
+                  {
+                    "children": [
+                      {
+                        "role": "text",
+                        "text": "검색 결과 1건"
+                      }
+                    ],
+                    "role": "status"
+                  },
+                  {
+                    "role": "text",
+                    "text": "홍길동 · 301호"
+                  }
+                ],
+                "name": "고객 검색 예제",
+                "ref": "e1",
+                "role": "region",
+                "scrollable": true
+              }
+            ],
+            "loading": false,
+            "revision": "7ad944bde90e3908b2379cd87dd5ee81:3",
+            "scroll": {
+              "dialog": 0,
+              "page": 0
+            },
+            "title": "Browser Assistant example",
+            "truncated": false,
+            "url": "/demo"
+          }
+        }
+      }
+    },
+    {
+      "clientCall": {
+        "argumentsJson": "{\"region\":\"e1\",\"direction\":\"down\",\"expectedRevision\":\"7ad944bde90e3908b2379cd87dd5ee81:3\",\"requestId\":\"example-scroll-1\"}",
+        "name": "scroll_view"
+      },
+      "input": {
+        "direction": "down",
+        "expectedRevision": "7ad944bde90e3908b2379cd87dd5ee81:3",
+        "region": "e1",
+        "requestId": "example-scroll-1"
+      },
+      "name": "scroll_view",
+      "output": {
+        "ok": true,
+        "state": {
+          "view": {
+            "alerts": [
+              "검색 결과 1건"
+            ],
+            "children": [
+              {
+                "children": [
+                  {
+                    "level": 2,
+                    "role": "heading",
+                    "text": "고객 검색"
+                  },
+                  {
+                    "children": [
+                      {
+                        "role": "text",
+                        "text": "고객 이름"
+                      },
+                      {
+                        "actions": [
+                          "fill"
+                        ],
+                        "disabled": false,
+                        "inputType": "text",
+                        "label": "고객 이름",
+                        "name": "고객 이름",
+                        "readOnly": false,
+                        "ref": "e2",
+                        "requiresConfirmation": true,
+                        "role": "textbox",
+                        "value": "홍길동"
+                      }
+                    ],
+                    "role": "group"
+                  },
+                  {
+                    "actions": [
+                      "click"
+                    ],
+                    "disabled": false,
+                    "label": "검색",
+                    "name": "검색",
+                    "readOnly": false,
+                    "ref": "e3",
+                    "requiresConfirmation": false,
+                    "role": "button"
+                  },
+                  {
+                    "children": [
+                      {
+                        "role": "text",
+                        "text": "검색 결과 1건"
+                      }
+                    ],
+                    "role": "status"
+                  },
+                  {
+                    "role": "text",
+                    "text": "홍길동 · 301호"
+                  }
+                ],
+                "name": "고객 검색 예제",
+                "ref": "e1",
+                "role": "region",
+                "scrollable": true
+              }
+            ],
+            "loading": false,
+            "revision": "7ad944bde90e3908b2379cd87dd5ee81:3",
+            "scroll": {
+              "dialog": 0,
+              "page": 0
+            },
+            "title": "Browser Assistant example",
+            "truncated": false,
+            "url": "/demo"
+          }
+        }
+      }
+    }
+  ]
+}

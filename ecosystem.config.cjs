@@ -1,0 +1,1 @@
+module.exports = { apps: [{ name: 'browser-assistant-api', cwd: __dirname, script: process.execPath, args: '--env-file=.env --import tsx src/server/index.ts', interpreter: 'none', watch: false, autorestart: true }] };

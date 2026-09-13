@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "emitDeclarationOnly": true
+  },
+  "include": ["src"],
+  "exclude": ["src/client/widget.tsx"]
+}

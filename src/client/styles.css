@@ -1,0 +1,11 @@
+@import "tailwindcss";
+@source "./";
+:host {
+  all: initial;
+  font-family: system-ui, sans-serif;
+  color: #172b25;
+  font-size: 14px;
+  line-height: 1.5;
+  color-scheme: light;
+  pointer-events: auto;
+}
