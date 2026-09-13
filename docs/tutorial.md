@@ -55,4 +55,4 @@ npm run demo:gateway
 npm run record:demo
 ```
 
-It writes a WebM under `.local/recording/`. When FFmpeg is installed, the script also creates `docs/media/demo.mp4` with a smaller encoding. Model responses and timing vary; the script waits for real visible outcomes and fails on timeout. It does not mock the AI response.
+It writes a WebM under `.local/recording/`. FFmpeg is required for the conversion that creates `docs/media/demo.mp4` with a smaller encoding. Model responses and timing vary; the script waits for real visible outcomes and fails on timeout. It does not mock the AI response.

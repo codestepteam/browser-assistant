@@ -57,4 +57,4 @@ npm run demo:gateway
 npm run record:demo
 ```
 
-`.local/recording/`에 WebM을 저장합니다. FFmpeg가 설치돼 있으면 `docs/media/demo.mp4`도 생성합니다. 모델 응답과 소요 시간은 달라질 수 있습니다. 스크립트는 실제 화면 결과를 기다리고 시간 초과 시 실패하며, AI 응답을 가짜로 대체하지 않습니다.
+`.local/recording/`에 WebM을 저장합니다. `docs/media/demo.mp4`를 생성하려면 FFmpeg가 설치돼 있어야 합니다. 모델 응답과 소요 시간은 달라질 수 있습니다. 스크립트는 실제 화면 결과를 기다리고 시간 초과 시 실패하며, AI 응답을 가짜로 대체하지 않습니다.

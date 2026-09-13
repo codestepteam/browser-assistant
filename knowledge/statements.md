@@ -22,3 +22,6 @@ Browser Assistant의 첫 공개 준비는 자체 운영 버전을 대상으로 �
 
 [BA-007]
 사용자는 첫 공개 준비 결과의 저장소 생성·커밋·푸시를 요청했다.
+
+[BA-008]
+2026-09-13에 코드스텝 팀의 공개 저장소 `https://github.com/codestepteam/browser-assistant`를 생성했다.
