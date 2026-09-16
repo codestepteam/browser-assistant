@@ -19,18 +19,19 @@ Pin a release tag or release asset. Do not point production installs to a moving
 
 ## Server environment
 
-| Variable                | Default               | Purpose                                                               |
-| ----------------------- | --------------------- | --------------------------------------------------------------------- |
-| `HOST`                  | `127.0.0.1`           | Backend bind address                                                  |
-| `PORT`                  | `8796`                | Backend port                                                          |
-| `OPENAI_API_KEY`        | required for AI       | AI provider API key; server only                                      |
-| `OPENAI_MODEL`          | `gpt-5-mini`          | Text/tool model                                                       |
-| `OPENAI_REALTIME_MODEL` | `gpt-realtime-2`      | Voice model                                                           |
-| `SERVER_TOKEN`          | empty for local demo  | Server-to-server authentication token                                 |
-| `ALLOWED_ORIGINS`       | local backend origins | Exact comma-separated browser origins                                 |
-| `REQUESTS_PER_MINUTE`   | `60`                  | POST limit per authenticated identity, or server-wide with token auth |
-| `MAX_CONCURRENT`        | `4`                   | Concurrent HTTP requests per process                                  |
-| `VOICE_SESSION_SECONDS` | `600`                 | Advertised SDK voice connection lifetime                              |
+| Variable                | Default               | Purpose                                                                    |
+| ----------------------- | --------------------- | -------------------------------------------------------------------------- |
+| `HOST`                  | `127.0.0.1`           | Backend bind address                                                       |
+| `PORT`                  | `8796`                | Backend port                                                               |
+| `OPENAI_API_KEY`        | required for AI       | AI provider API key; server only                                           |
+| `OPENAI_MODEL`          | `gpt-5.6-luna`        | Text/tool model                                                            |
+| `OPENAI_LIVE_MODEL`     | `gpt-live-1`          | Voice model                                                                |
+| `SERVER_TOKEN`          | empty for local demo  | Server-to-server authentication token                                      |
+| `ALLOWED_ORIGINS`       | local backend origins | Exact comma-separated browser origins                                      |
+| `REQUESTS_PER_MINUTE`   | `60`                  | POST limit per authenticated identity, or server-wide with token auth      |
+| `MAX_CONCURRENT`        | `4`                   | Concurrent HTTP requests per process                                       |
+| `VOICE_SESSION_SECONDS` | `600`                 | Advertised SDK voice connection lifetime                                   |
+| `VOICE_IDLE_SECONDS`    | `60`                  | Close voice after this many seconds without input, speech, or backend work |
 
 The request body limit is 400,000 bytes. The SDK ends its voice connection after the advertised lifetime; this is a cooperative client limit, not an authoritative billing or malicious-client control. Voice connection creation remains subject to backend POST limits. Apply provider-side spend limits and a reverse-proxy policy appropriate to your deployment. In-memory rate counters are per process; use a shared limiter before scaling to multiple replicas.
 
@@ -160,3 +161,17 @@ Stopping cancels further client tool execution and closes the voice connection. 
 - **Protocol mismatch**: deploy matching version-1 client/server artifacts.
 
 Server logs contain request ID, method, path, status and duration only. Correlate `X-Request-Id` or the JSON `requestId` with those logs. Do not add authorization headers, SDP, conversation bodies or screen dumps to production logs.
+
+## GPT-Live voice sessions
+
+Opening a page or regaining connectivity does not create a voice session. The first hold requests microphone permission before creating the connection. Releasing while permission is pending does not start a paid session. If a creation request is already in flight, initialization charges may apply.
+
+Only a held button enables the microphone track. Release disables it immediately and WebRTC carries silence. No Realtime commit/response trigger is used; GPT-Live decides when to reply. Pointer cancellation and window blur mute and close the session. Typed input keeps using `/chat` and closes voice.
+
+GPT-Live handles speech; the Responses model in `OPENAI_MODEL` selects screen tools. Existing browser tools still execute actions and request confirmation. A new hold invalidates subsequent actions from older work; it does not roll back actions already performed.
+
+The default idle timeout is 60 seconds. Holds, received audio, captions and backend activity reset it. Pending tools and confirmations postpone idle closure. The overall `VOICE_SESSION_SECONDS` cap still applies. The stop button closes the session explicitly. Closure sends `session.close` and waits for final usage before releasing the transport.
+
+Muted sessions still incur duration charges. The current voice rate is $0.05/minute, with backend model and tool costs separate. WebRTC creation bills 15 seconds initially, credited against running-session duration. See [official billing guidance](https://developers.openai.com/api/docs/guides/voice-latency-cost?api=live).
+
+The new client requires a server supporting `/live`; add that path to authenticated proxy allowlists. `/realtime` and `OPENAI_REALTIME_MODEL` remain for older clients.

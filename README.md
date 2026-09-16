@@ -4,14 +4,14 @@
 
 An open-source, self-hosted assistant that **uses your website's rendered UI**. Add a script or a React component, connect your server, then ask it to navigate, fill forms, or perform an action with your confirmation.
 
-- Hold the floating microphone to speak; release to send.
+- Hold the floating microphone to send audio to GPT-Live; release to mute. Voice connects on demand and closes after 60 idle seconds.
 - Read the latest answer in a compact floating bar. Tap it for full chat and text input.
 - Observe a compact semantic tree; execute only observed controls.
 - Review consequential actions before execution. Stop at any time.
 - English and Korean UI, speech recognition defaults, and configurable time zones.
 - Your server and your AI provider API key. No Codestep-hosted backend is required.
 
-**Status: 0.1.1 alpha.** Automated browser and mocked microphone checks cover Chromium, Firefox, WebKit, and mobile emulation. Physical iPhone/Android microphone behavior remains unverified. See [compatibility](docs/compatibility.md).
+**Status: alpha; GPT-Live support is available on `main`.** Automated browser and mocked microphone checks cover Chromium, Firefox, WebKit, and mobile emulation. Physical iPhone/Android microphone behavior remains unverified. See [compatibility](docs/compatibility.md).
 
 ## Watch it work
 
@@ -40,6 +40,21 @@ Open [http://localhost:8796/demo](http://localhost:8796/demo) for the script exa
 
 The default server binds to loopback. Voice requires HTTPS or localhost. For a shared deployment, follow the [authentication and HTTPS guide](docs/guide.md#authentication-and-https).
 
+## Voice behavior and model settings
+
+| Role                                                  | Environment variable    | Default        |
+| ----------------------------------------------------- | ----------------------- | -------------- |
+| Spoken conversation                                   | `OPENAI_LIVE_MODEL`     | `gpt-live-1`   |
+| Task reasoning, screen tool selection, and typed chat | `OPENAI_MODEL`          | `gpt-5.6-luna` |
+| Idle timeout                                          | `VOICE_IDLE_SECONDS`    | `60` seconds   |
+| Overall voice connection limit                        | `VOICE_SESSION_SECONDS` | `600` seconds  |
+
+The first microphone hold starts a voice session. Release immediately blocks microphone input while the assistant finishes its work and spoken reply. Opening a page alone does not create a voice session. After work and speech finish, 60 seconds without activity closes the connection. The stop button also closes it explicitly.
+
+**An open voice session incurs charges even when the microphone is muted.** GPT-Live bills for session duration; backend model and tool costs are separate. WebRTC creation initially bills 15 seconds, credited against running-session duration. See [official billing guidance](https://developers.openai.com/api/docs/guides/voice-latency-cost?api=live).
+
+Update the client and server together, and allow `/live` through your authenticated proxy. Typed chat uses `/chat`. The `v0.1.1` tag contains the older Realtime implementation; the installation below uses `main` for GPT-Live support. To pin a tested revision, replace `main` with its commit SHA.
+
 ## Embed a script
 
 Serve `dist/widget.js` from your server, and expose authenticated assistant routes at `/assistant`:
@@ -64,7 +79,7 @@ Serve `dist/widget.js` from your server, and expose authenticated assistant rout
 The first release is distributed through GitHub, not the npm registry:
 
 ```sh
-npm install github:codestepteam/browser-assistant#v0.1.1
+npm install github:codestepteam/browser-assistant#main
 ```
 
 ```tsx

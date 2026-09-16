@@ -1,5 +1,14 @@
 export type Locale = "en-US" | "ko-KR";
 export const english = {
+  "누르는 동안 듣고 있어요. 놓으면 마이크가 꺼집니다.":
+    "Listening while held. Release to mute.",
+  "녹음 중 · 놓으면 마이크 끄기": "Recording · release to mute",
+  "버튼을 누르는 동안만 음성이 전달됩니다. 놓으면 마이크가 꺼집니다. 전체 대화는 옆의 응답을 눌러 펼칠 수 있습니다.":
+    "Audio is sent only while you hold the button. Release to mute. Tap the response to expand the conversation.",
+  "GPT-Live를 지원하는 서버로 업데이트해 주세요.":
+    "Update the server to support GPT-Live.",
+  "GPT-Live 연결을 시작하지 못했습니다. 모델 접근 권한과 사용 한도를 확인해 주세요.":
+    "Could not start GPT-Live. Check model access and usage limits.",
   "사이트 도우미": "Website assistant",
   "응답을 읽지 못했습니다.": "Could not read the response.",
   "요청을 처리하지 못했습니다.": "Could not process the request.",

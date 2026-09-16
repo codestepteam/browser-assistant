@@ -27,6 +27,7 @@ app.route(
     requestsPerMinute: Number(process.env.REQUESTS_PER_MINUTE || 60),
     maxConcurrent: Number(process.env.MAX_CONCURRENT || 4),
     voiceSessionSeconds: Number(process.env.VOICE_SESSION_SECONDS || 600),
+    voiceIdleSeconds: Number(process.env.VOICE_IDLE_SECONDS || 60),
     logger: (entry) => console.log(JSON.stringify(entry)),
   }),
 );

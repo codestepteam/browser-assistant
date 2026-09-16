@@ -70,7 +70,7 @@ app.all("/assistant/*", async (c) => {
     return c.json({ error: "Sign in first", code: "UNAUTHORIZED" }, 401);
   const path = c.req.path.slice("/assistant".length);
   if (
-    !["/health", "/chat", "/realtime"].includes(path) ||
+    !["/health", "/chat", "/realtime", "/live"].includes(path) ||
     !["GET", "POST"].includes(c.req.method)
   )
     return c.notFound();

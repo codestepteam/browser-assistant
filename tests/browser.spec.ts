@@ -18,7 +18,7 @@ test("press-to-talk reuses permission, mutes on release, and runs only while aut
     return module.checkVoiceHold();
   });
   expect(result.ok).toBe(true);
-  expect(result.microphoneRequests).toBe(1);
+  expect(result.initialPermissionRequests).toBe(1);
 });
 test("pending tasks resume from a new snapshot and stop rejects late tools", async ({
   page,

@@ -25,3 +25,17 @@ Browser Assistant의 첫 공개 준비는 자체 운영 버전을 대상으로 �
 
 [BA-008]
 2026-09-13에 코드스텝 팀의 공개 저장소 `https://github.com/codestepteam/browser-assistant`를 생성했다.
+
+근거: 2026-09-15 사용자가 GPT-Live 전환 대화에서 요청한 입력 및 종료 정책이다.
+
+[BA-009]
+Browser Assistant의 GPT-Live 음성 입력은 누르고 말하기 방식을 사용한다.
+
+[BA-010]
+사용자가 버튼을 놓으면 Browser Assistant는 마이크 입력을 즉시 차단한다.
+
+[BA-011]
+Browser Assistant는 일정 시간 사용하지 않은 음성 세션을 종료한다.
+
+[BA-012]
+2026-09-15 사용자 요청에 따라 GPT-Live의 작업 판단 모델과 같은 설정을 공유하는 글·도구 모델의 기본값은 `gpt-5.6-luna`이다.

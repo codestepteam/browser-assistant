@@ -6,8 +6,9 @@
 
 All bodies are JSON. The API base URL is configurable. The gateway example mounts these routes under `/assistant`.
 
-- `GET /health`: `{ok, configured, protocolVersion:1, voiceSessionSeconds}`.
+- `GET /health`: `{ok, configured, protocolVersion:1, voiceApi:"live", voiceIdleSeconds, voiceSessionSeconds}`.
 - `POST /chat`: `{prompt,context?,history?,continuation?,instructions?,siteContext?,locale?,timeZone?,protocolVersion?:1}`. Returns `{reply,calls,responseItems,usage?}`. `calls` contain `{name,argumentsJson,callId}`; append returned `responseItems` and the matching `function_call_output` to the next continuation.
+- `POST /live`: `{sdp,context?,instructions?,siteContext?,locale?,timeZone?,protocolVersion?:1}` → `{sdp,sessionId}`. Creates a GPT-Live WebRTC session. Only the server holds the provider key.
 - `POST /realtime`: `{sdp,context?,instructions?,siteContext?,locale?,timeZone?,protocolVersion?:1}`. Returns an SDP answer `{sdp}`. Only the server holds the provider key.
 
 `locale` accepts `en-US` or `ko-KR`; `timeZone` is a valid IANA time zone. Prompt limit: 4,000 characters. Instructions: 8,000. Site context: 16,000. Screen context: 24,000 serialized characters. History: 12 entries and 30,000 serialized characters. Continuation: 100 entries and 240,000 serialized characters. Unsupported roles, executable tool names and protocol versions are rejected.

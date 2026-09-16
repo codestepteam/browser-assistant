@@ -26,6 +26,7 @@ export type ServerOptions = {
   requestsPerMinute?: number;
   maxConcurrent?: number;
   voiceSessionSeconds?: number;
+  voiceIdleSeconds?: number;
   logger?: (entry: RequestLog) => void;
 };
 export function createApp(options: ServerOptions = {}) {
@@ -37,6 +38,13 @@ export function createApp(options: ServerOptions = {}) {
   const requestsPerMinute = options.requestsPerMinute ?? 60,
     maxConcurrent = options.maxConcurrent ?? 4;
   const voiceSessionSeconds = options.voiceSessionSeconds ?? 600;
+  const voiceIdleSeconds = options.voiceIdleSeconds ?? 60;
+  if (
+    !Number.isInteger(voiceIdleSeconds) ||
+    voiceIdleSeconds < 1 ||
+    voiceIdleSeconds > 600
+  )
+    throw new Error("Invalid voiceIdleSeconds");
   if (
     !Number.isInteger(voiceSessionSeconds) ||
     voiceSessionSeconds < 30 ||
@@ -174,6 +182,8 @@ export function createApp(options: ServerOptions = {}) {
       configured: provider.configured(),
       protocolVersion: 1,
       voiceSessionSeconds,
+      voiceApi: "live",
+      voiceIdleSeconds,
     }),
   );
   app.post("/chat", async (c) => {
@@ -186,6 +196,12 @@ export function createApp(options: ServerOptions = {}) {
     if (JSON.stringify(input.context ?? {}).length > 24000)
       throw new HTTPException(400, { message: "Screen context is too large." });
     return c.json(await provider.realtime(input, c.req.raw.signal));
+  });
+  app.post("/live", async (c) => {
+    const input = realtimeSchema.parse(await c.req.json());
+    if (JSON.stringify(input.context ?? {}).length > 24000)
+      throw new HTTPException(400, { message: "Screen context is too large." });
+    return c.json(await provider.live(input, c.req.raw.signal));
   });
   return app;
 }

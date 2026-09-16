@@ -6,8 +6,9 @@
 
 본문은 JSON이며 기본 주소는 설정으로 지정합니다. 인증 연결 예제는 `/assistant` 아래에 다음 경로를 제공합니다.
 
-- `GET /health`: `{ok,configured,protocolVersion:1,voiceSessionSeconds}`.
+- `GET /health`: `{ok,configured,protocolVersion:1,voiceApi:"live",voiceIdleSeconds,voiceSessionSeconds}`.
 - `POST /chat`: `{prompt,context?,history?,continuation?,instructions?,siteContext?,locale?,timeZone?,protocolVersion?:1}`. 응답은 `{reply,calls,responseItems,usage?}`입니다. `calls` 항목은 `{name,argumentsJson,callId}`입니다.
+- `POST /live`: `{sdp,context?,instructions?,siteContext?,locale?,timeZone?,protocolVersion?:1}` → `{sdp,sessionId}`. GPT-Live WebRTC 연결을 생성합니다. AI 제공업체 API 키는 서버에서만 사용합니다.
 - `POST /realtime`: `{sdp,context?,instructions?,siteContext?,locale?,timeZone?,protocolVersion?:1}`. 응답은 SDP 답변 `{sdp}`입니다.
 
 `locale`는 `en-US` 또는 `ko-KR`, `timeZone`은 유효한 IANA 시간대입니다. 요청 문장 4,000자, 지침 8,000자, 사이트 설명 16,000자, 현재 문맥 직렬화 24,000자까지 허용합니다. 과거 대화는 12항목·30,000자, 이어가기는 100항목·240,000자 제한입니다. 지원하지 않는 역할·도구·프로토콜 버전은 거절합니다.

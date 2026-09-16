@@ -106,6 +106,57 @@ test("voice session uses manual push to talk and configurable website instructio
   assert.equal(session.audio.input.turn_detection, null);
   assert.match(session.instructions, /inventory website/);
 });
+test("Live uses authenticated WebRTC setup with a separate screen backend", async () => {
+  let body: any, url: unknown;
+  const provider = createAssistantProvider({
+    apiKey: () => "test-key",
+    fetch: async (target, init) => {
+      url = target;
+      body = JSON.parse(String(init?.body));
+      assert.equal(
+        (init?.headers as Record<string, string>).Authorization,
+        "Bearer test-key",
+      );
+      return Response.json({
+        session: { id: "live-test" },
+        transport: { sdp: "v=0\r\ns=answer" },
+      });
+    },
+  });
+  const app = createApp({ provider });
+  const health = await (await app.request("/health")).json();
+  assert.equal(health.voiceApi, "live");
+  assert.equal(health.voiceIdleSeconds, 60);
+  const response = await app.request("/live", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      sdp: "v=0\r\ns=browser test offer",
+      locale: "ko-KR",
+      siteContext: "Inventory website",
+      context: { customer: "900101-1234567" },
+    }),
+  });
+  assert.equal(response.status, 200);
+  assert.equal(url, "https://api.openai.com/v1/live/sessions");
+  assert.equal(body.transport.type, "webrtc");
+  assert.equal(
+    body.session.model,
+    process.env.OPENAI_LIVE_MODEL || "gpt-live-1",
+  );
+  assert.equal(body.session.delegation.type, "responses");
+  assert.equal(body.session.delegation.responses.parallel_tool_calls, false);
+  assert.match(
+    body.session.delegation.responses.instructions,
+    /Inventory website/,
+  );
+  assert.ok(!JSON.stringify(body).includes("900101-1234567"));
+  assert.deepEqual(await response.json(), {
+    sdp: "v=0\r\ns=answer",
+    sessionId: "live-test",
+  });
+  assert.throws(() => createApp({ voiceIdleSeconds: 0 }), /voiceIdleSeconds/);
+});
 test("queued tools are cancelled, confirmations bind contents, and replay never clicks twice", async () => {
   let epoch = 0,
     revision = "page:1",
