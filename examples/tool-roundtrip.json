@@ -93,7 +93,7 @@
     },
     {
       "clientCall": {
-        "argumentsJson": "{\"ref\":\"e2\",\"action\":\"fill\",\"value\":\"홍길동\",\"expectedRevision\":\"7ad944bde90e3908b2379cd87dd5ee81:1\",\"requestId\":\"example-fill-1\"}",
+        "argumentsJson": "{\"ref\": \"e2\", \"action\": \"fill\", \"value\": \"홍길동\", \"expectedRevision\": \"7ad944bde90e3908b2379cd87dd5ee81:1\", \"requestId\": \"example-fill-1\", \"requireConfirmation\": false}",
         "name": "use_element"
       },
       "input": {
@@ -101,7 +101,8 @@
         "expectedRevision": "7ad944bde90e3908b2379cd87dd5ee81:1",
         "ref": "e2",
         "requestId": "example-fill-1",
-        "value": "홍길동"
+        "value": "홍길동",
+        "requireConfirmation": false
       },
       "name": "use_element",
       "output": {
@@ -189,7 +190,7 @@
     },
     {
       "clientCall": {
-        "argumentsJson": "{\"ref\":\"e3\",\"action\":\"click\",\"value\":null,\"expectedRevision\":\"7ad944bde90e3908b2379cd87dd5ee81:2\",\"requestId\":\"example-click-1\"}",
+        "argumentsJson": "{\"ref\": \"e3\", \"action\": \"click\", \"value\": null, \"expectedRevision\": \"7ad944bde90e3908b2379cd87dd5ee81:2\", \"requestId\": \"example-click-1\", \"requireConfirmation\": true}",
         "name": "use_element"
       },
       "input": {
@@ -197,7 +198,8 @@
         "expectedRevision": "7ad944bde90e3908b2379cd87dd5ee81:2",
         "ref": "e3",
         "requestId": "example-click-1",
-        "value": null
+        "value": null,
+        "requireConfirmation": true
       },
       "name": "use_element",
       "output": {
@@ -285,7 +287,7 @@
     },
     {
       "clientCall": {
-        "argumentsJson": "{\"region\":\"e1\",\"direction\":\"down\",\"expectedRevision\":\"7ad944bde90e3908b2379cd87dd5ee81:3\",\"requestId\":\"example-scroll-1\"}",
+        "argumentsJson": "{\"region\": \"e1\", \"direction\": \"down\", \"expectedRevision\": \"7ad944bde90e3908b2379cd87dd5ee81:3\", \"requestId\": \"example-scroll-1\"}",
         "name": "scroll_view"
       },
       "input": {

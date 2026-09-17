@@ -187,6 +187,7 @@ test("queued tools are cancelled, confirmations bind contents, and replay never 
     value: null,
     expectedRevision: revision,
     requestId: "a",
+    requireConfirmation: false,
   };
   const wait = tools.execute("use_element", input);
   await new Promise((resolve) => setImmediate(resolve));
@@ -343,4 +344,77 @@ test("concurrent request limits release their slots after completion", async () 
     () => createApp({ voiceSessionSeconds: -1 }),
     /voiceSessionSeconds/,
   );
+});
+
+test("AI selects confirmation; forced confirmation and user cancellation cannot be bypassed", async () => {
+  let forced = false,
+    approve = true,
+    confirmations = 0,
+    operations = 0;
+  const tools = createConversationTools({
+    active: () => true,
+    view: () => ({
+      revision: "view:1",
+      controls: [{ ref: "button", requiresConfirmation: forced }],
+    }),
+    settled: async () => {},
+    operate: () => {
+      operations++;
+    },
+    confirm: async () => {
+      confirmations++;
+      return approve;
+    },
+  });
+  const input = {
+    ref: "button",
+    action: "click",
+    value: null,
+    expectedRevision: "view:1",
+    requestId: "read",
+    requireConfirmation: false,
+  };
+  assert.equal((await tools.execute("use_element", input)).ok, true);
+  assert.equal(confirmations, 0);
+  assert.equal(
+    (
+      await tools.execute("use_element", {
+        ...input,
+        requestId: "save",
+        requireConfirmation: true,
+      })
+    ).ok,
+    true,
+  );
+  assert.equal(confirmations, 1);
+  forced = true;
+  assert.equal(
+    (await tools.execute("use_element", { ...input, requestId: "forced" })).ok,
+    true,
+  );
+  assert.equal(confirmations, 2);
+  assert.equal(operations, 3);
+  const { requireConfirmation: _flag, ...missing } = input;
+  assert.equal((await tools.execute("use_element", missing)).ok, false);
+  assert.equal(
+    (await tools.execute("use_element", { ...input, confirmed: true })).ok,
+    false,
+  );
+  forced = false;
+  approve = false;
+  const cancel = { ...input, requestId: "cancel", requireConfirmation: true };
+  assert.equal(
+    (await tools.execute("use_element", cancel)).error?.code,
+    "USER_CANCELLED",
+  );
+  assert.equal(
+    (
+      await tools.execute("use_element", {
+        ...cancel,
+        requireConfirmation: false,
+      })
+    ).error?.code,
+    "USER_CANCELLED",
+  );
+  assert.equal(operations, 3);
 });

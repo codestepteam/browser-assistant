@@ -1,6 +1,6 @@
 {
   "name": "@codestepteam/browser-assistant",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "type": "module",
   "license": "MIT",
   "files": [
@@ -90,5 +90,11 @@
   "homepage": "https://github.com/codestepteam/browser-assistant#readme",
   "bugs": {
     "url": "https://github.com/codestepteam/browser-assistant/issues"
-  }
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "unpkg": "./dist/widget.js",
+  "jsdelivr": "./dist/widget.js"
 }

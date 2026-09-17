@@ -29,6 +29,7 @@ The SDK owns the tool loop. Most integrators need only the component or script, 
 {
   "ref": "e2",
   "action": "fill",
+  "requireConfirmation": false,
   "value": "Mina",
   "expectedRevision": "page-token:1",
   "requestId": "fill-1"
@@ -97,3 +98,5 @@ HTTP failures: `{error,code,requestId}`. Typical codes: `UNAUTHORIZED`, `ORIGIN_
 Tool failures: `{ok:false,state:{view},error:{code,message}}`. Typical codes: `NEEDS_CONFIRMATION`, `USER_CANCELLED`, `SCREEN_CHANGED`, `SCREEN_CHANGED_OR_INVALID_INPUT`.
 
 `ok:true` means the local operation completed, not that a business transaction succeeded. Inspect `loading`, visible status/errors and fresh form/table contents. If a network operation's outcome is unknown, report uncertainty rather than repeating it automatically.
+
+`use_element.requireConfirmation` is a required boolean decision made by the AI from the user request and visible effects. Use `false` for reading, search, navigation and ordinary editing; use `true` for final saves, deletion, payments, sending, or unclear effects. It requests confirmation, never supplies user approval. `data-agent-action="confirm"` or a `true` result from `screen.requiresConfirmation` overrides an AI `false` for every `use_element` action. There is no `safe`/`preview` bypass setting. Update client and server together.

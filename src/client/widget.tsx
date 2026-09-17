@@ -25,6 +25,10 @@ if (script?.dataset.serverUrl) {
     siteContext: script.dataset.siteContext,
     sessionKey: script.dataset.sessionKey,
     title: script.dataset.title,
+    chatVisibility:
+      script.dataset.chatVisibility === "always"
+        ? ("always" as const)
+        : ("session" as const),
   };
   if (document.readyState === "loading")
     document.addEventListener("DOMContentLoaded", () => mount(options), {

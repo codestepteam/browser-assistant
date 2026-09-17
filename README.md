@@ -19,26 +19,66 @@ An open-source, self-hosted assistant that **uses your website's rendered UI**. 
 
 The recording uses real AI requests against a self-hosted server and fictional customer data. It demonstrates text-driven editing and confirmation; it is not a physical-device voice test.
 
-## Run your own server
+## Getting started: client and server
 
-Requires Node.js **22.14+** and npm. Node.js 24 is also checked by CI.
+| Part   | Where it runs              | Responsibility                                  |
+| ------ | -------------------------- | ----------------------------------------------- |
+| Client | Your website               | Microphone, conversation UI, and screen actions |
+| Server | A separate Node.js service | AI provider API key and AI connections          |
 
-```sh
-git clone https://github.com/codestepteam/browser-assistant.git
-cd browser-assistant
-npm ci
-cp .env.example .env
+**Give the client the server's address.** For example, your website runs at `http://localhost:3000` and the assistant server at `http://localhost:8796`. They can use different ports.
+
+### 1. Prepare a server address
+
+Use an existing assistant server, or follow [Server setup and deployment](docs/server.md) to run one at `http://localhost:8796`. The examples below are for local development on the same computer.
+
+### 2. Add the client to your website
+
+#### Plain HTML and JavaScript
+
+Add this script to your website. No React installation or repository clone is needed.
+
+```html
+<script
+  src="http://localhost:8796/widget.js"
+  data-server-url="http://localhost:8796"
+  data-session-key="current-user"
+  data-locale="en-US"
+  data-time-zone="America/New_York"
+  defer
+></script>
 ```
 
-Set `OPENAI_API_KEY` in `.env`, then:
+`src` downloads the client; `data-server-url` identifies the server handling AI requests. This example uses the assistant server for both. Once the client is published to a CDN, `src` can point there independently.
+
+#### React
+
+Install in your existing website project. **The package is not yet published to the npm registry; use the GitHub package for now.** You do not need to clone the repository yourself.
 
 ```sh
-npm start
+npm install github:codestepteam/browser-assistant#main
 ```
 
-Open [http://localhost:8796/demo](http://localhost:8796/demo) for the script example or [http://localhost:8796/react](http://localhost:8796/react) for the React example. `npm ci` builds the distribution through `prepare`. Provider usage may incur charges from your AI provider.
+```tsx
+import { BrowserAssistant } from "@codestepteam/browser-assistant";
 
-The default server binds to loopback. Voice requires HTTPS or localhost. For a shared deployment, follow the [authentication and HTTPS guide](docs/guide.md#authentication-and-https).
+<BrowserAssistant
+  serverUrl="http://localhost:8796"
+  sessionKey="current-user"
+  locale="en-US"
+  timeZone="America/New_York"
+/>;
+```
+
+After npm publication, installation can use `npm install @codestepteam/browser-assistant`. Use that command and npm CDN URLs only after publication. To pin a tested revision today, replace `main` with its commit SHA. The `v0.1.1` tag contains the older Realtime implementation.
+
+See the [detailed guide](docs/guide.md) for Next.js, prompts, and login integration. `sessionKey` separates conversation history; it is not authentication. Configure the AI provider API key only on the server.
+
+### 3. Check the connection
+
+Open your website and hold the microphone button to speak. Local HTTP voice input works on `localhost`; production sites require HTTPS.
+
+Set the server's `ALLOWED_ORIGINS` to your **website's address**, `http://localhost:3000` in this example. Change it if your website uses a different port. Production requires authentication integration; the [server guide](docs/server.md) separates local development from deployment.
 
 ## Voice behavior and model settings
 
@@ -53,49 +93,7 @@ The first microphone hold starts a voice session. Release immediately blocks mic
 
 **An open voice session incurs charges even when the microphone is muted.** GPT-Live bills for session duration; backend model and tool costs are separate. WebRTC creation initially bills 15 seconds, credited against running-session duration. See [official billing guidance](https://developers.openai.com/api/docs/guides/voice-latency-cost?api=live).
 
-Update the client and server together, and allow `/live` through your authenticated proxy. Typed chat uses `/chat`. The `v0.1.1` tag contains the older Realtime implementation; the installation below uses `main` for GPT-Live support. To pin a tested revision, replace `main` with its commit SHA.
-
-## Embed a script
-
-Serve `dist/widget.js` from your server, and expose authenticated assistant routes at `/assistant`:
-
-```html
-<script
-  src="/widget.js"
-  data-server-url="/assistant"
-  data-locale="en-US"
-  data-time-zone="America/New_York"
-  data-site-context="Customers can be searched and edited on /customers."
-  data-instructions="Keep answers brief and verify the visible result."
-  data-session-key="current-user-id"
-  defer
-></script>
-```
-
-`data-session-key` separates local conversation history; **it is not authentication**. Never put the server token or AI provider API key in client code.
-
-## Embed React
-
-The first release is distributed through GitHub, not the npm registry:
-
-```sh
-npm install github:codestepteam/browser-assistant#main
-```
-
-```tsx
-import { BrowserAssistant } from "@codestepteam/browser-assistant";
-
-<BrowserAssistant
-  serverUrl="/assistant"
-  sessionKey={currentUser.id}
-  locale="en-US"
-  timeZone="America/New_York"
-  instructions="Keep answers brief. Verify the result after acting."
-  siteContext="This website manages customers and contracts."
-/>;
-```
-
-For Next.js, use a client-only dynamic import with `ssr: false`; see the [guide](docs/guide.md#react-and-nextjs). Plain HTML users do not need React installed: the script bundles its own runtime.
+Update the client and server together. Authentication and API routing are covered in the [server guide](docs/server.md).
 
 ## Documentation
 
@@ -121,3 +119,15 @@ npm run test:package
 The client, server, and examples live in one repository. No database, hosted subscription, or hosted service API key is required. The current AI adapter uses OpenAI. Offline inference and additional providers are not implemented.
 
 MIT License. [Third-party notices](THIRD_PARTY_NOTICES.md).
+
+### Chat visibility and floating controls
+
+`chatVisibility` defaults to `"session"`: only the microphone is visible while idle. The response strip appears when a voice connection starts; pending confirmations and connection errors remain visible. Use `chatVisibility="always"` for a permanent entry point to text chat, or `data-chat-visibility="always"` on the script widget. Controls use the browser Popover API top layer to stay anchored to the viewport while remaining inside an open dialog's focus scope.
+
+## Confirmation decisions
+
+The AI decides whether to request confirmation from the user request and visible effects. Reading, search, navigation and ordinary editing can proceed directly; final saves, deletion, payments, sending or unclear effects require confirmation. Optionally mark mandatory confirmation with `data-agent-action="confirm"`. There is no `safe` setting. Requested confirmation still waits for the actual user; AI judgment does not replace your server authorization checks.
+
+## Automatic npm publishing
+
+The CI/CD workflow publishes a new patch version after a `main` push passes all checks. Initial npm authentication and trusted-publisher setup are required. See [publishing setup and behavior](docs/publishing.md).

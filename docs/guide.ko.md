@@ -66,21 +66,21 @@ const app = createApp({
 
 ## 클라이언트 설정
 
-| 설정                          | 의미                                                         |
-| ----------------------------- | ------------------------------------------------------------ |
-| `serverUrl`                   | 필수 API 기본 주소                                           |
-| `sessionKey`                  | 사용자별 대화 구분. 기본 `default`는 단일 사용자 예제용      |
-| `locale`                      | `en-US` 기본값 또는 `ko-KR`. 화면·음성 인식 기본값·응답 언어 |
-| `timeZone`                    | IANA 시간대. 기본값 `UTC`                                    |
-| `title`                       | 도우미 제목                                                  |
-| `instructions`                | 선호하는 행동 지침. 실제 권한 정책은 아님                    |
-| `siteContext`                 | 사이트 목적·페이지·업무 용어                                 |
-| `context`                     | 현재 선택·화면 정보                                          |
-| `translations`                | 영어 원문으로 지정하는 문구 재정의                           |
-| `screen.root`                 | 수집할 DOM 루트를 반환하는 함수                              |
-| `screen.exclude`              | 추가로 제외할 CSS 선택자                                     |
-| `screen.requiresConfirmation` | 클라이언트의 실행 확인 정책                                  |
-| `onReady`                     | 도구 실행기 연결. 검사·진단용 선택 사항                      |
+| 설정                          | 의미                                                          |
+| ----------------------------- | ------------------------------------------------------------- |
+| `serverUrl`                   | 필수 API 기본 주소                                            |
+| `sessionKey`                  | 사용자별 대화 구분. 기본 `default`는 단일 사용자 예제용       |
+| `locale`                      | `en-US` 기본값 또는 `ko-KR`. 화면·음성 인식 기본값·응답 언어  |
+| `timeZone`                    | IANA 시간대. 기본값 `UTC`                                     |
+| `title`                       | 도우미 제목                                                   |
+| `instructions`                | 선호하는 행동 지침. 실제 권한 정책은 아님                     |
+| `siteContext`                 | 사이트 목적·페이지·업무 용어                                  |
+| `context`                     | 현재 선택·화면 정보                                           |
+| `translations`                | 영어 원문으로 지정하는 문구 재정의                            |
+| `screen.root`                 | 수집할 DOM 루트를 반환하는 함수                               |
+| `screen.exclude`              | 추가로 제외할 CSS 선택자                                      |
+| `screen.requiresConfirmation` | 강제 확인 조건. true는 확인을 강제하며 false는 AI 판단을 유지 |
+| `onReady`                     | 도구 실행기 연결. 검사·진단용 선택 사항                       |
 
 스크립트 속성은 `data-server-url`, `data-session-key`, `data-locale`, `data-time-zone`, `data-title`, `data-instructions`, `data-site-context`를 지원합니다. 함수나 동적인 문맥은 스크립트를 로드한 뒤 `BrowserAssistant.mount(options)`로 전달하세요. 반환 함수는 도우미를 제거하므로 로그아웃 시 호출합니다. 연결 중인 음성의 사이트 지침을 바꾸려면 다시 마운트하세요. 언어·시간대 변경은 연결을 다시 준비하고 현재 화면부터 읽습니다.
 

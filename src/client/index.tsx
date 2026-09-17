@@ -29,12 +29,24 @@ export function BrowserAssistant({
   const live = useRef(true),
     epoch = useRef(0),
     decision = useRef<((approved: boolean) => void) | null>(null);
-  const [pending, setPending] = useState<ScreenActionPreview | null>(null),
-    [embedded, setEmbedded] = useState(false);
+  const [pending, setPending] = useState<ScreenActionPreview | null>(null);
   const [host] = useState(() => {
     const el = document.createElement("div");
     el.dataset.agentExclude = "";
     el.dataset.browserAssistant = "";
+    el.setAttribute("popover", "manual");
+    Object.assign(el.style, {
+      position: "fixed",
+      inset: "0",
+      width: "100%",
+      height: "100%",
+      margin: "0",
+      padding: "0",
+      border: "0",
+      overflow: "visible",
+      background: "transparent",
+      pointerEvents: "none",
+    });
     el.attachShadow({ mode: "open" });
     return el;
   });
@@ -88,8 +100,8 @@ export function BrowserAssistant({
       if (host.parentElement !== target) target.appendChild(host);
       host.removeAttribute("aria-hidden");
       host.removeAttribute("inert");
-      host.style.pointerEvents = "auto";
-      setEmbedded(!!modal);
+      // Stay inside the focus scope, but render in the viewport top layer instead of a transformed dialog.
+      if (!host.matches(":popover-open")) host.showPopover();
     };
     attach();
     const observer = new MutationObserver(attach);
@@ -124,7 +136,7 @@ export function BrowserAssistant({
         locale={locale}
         translations={translations}
         sessionKey={sessionKey}
-        embedded={embedded}
+        embedded={false}
         onCommand={(call) =>
           tools.execute(call.name, JSON.parse(call.argumentsJson))
         }
@@ -137,17 +149,19 @@ export function BrowserAssistant({
             <div
               role="group"
               aria-label={t("화면 작업 실행 확인")}
-              className="flex max-h-[30dvh] flex-col gap-2 overflow-y-auto border-t border-slate-200 bg-amber-50 p-3 text-sm"
+              className="flex max-h-[30dvh] min-h-0 shrink-0 flex-col gap-2 overflow-hidden border-t border-slate-200 bg-amber-50 p-3 text-sm"
             >
-              <strong>
-                {pending.label} · {t("실행 확인")}
-              </strong>
-              <p className="break-words text-xs">{pending.location}</p>
-              {pending.fields.map((field, i) => (
-                <p className="break-words text-xs" key={i}>
-                  {field.label}: {field.value || t("미입력")}
-                </p>
-              ))}
+              <div className="min-h-0 overflow-y-auto overscroll-contain">
+                <strong>
+                  {pending.label} · {t("실행 확인")}
+                </strong>
+                <p className="break-words text-xs">{pending.location}</p>
+                {pending.fields.map((field, i) => (
+                  <p className="break-words text-xs" key={i}>
+                    {field.label}: {field.value || t("미입력")}
+                  </p>
+                ))}
+              </div>
               <div className="flex shrink-0 justify-end gap-2">
                 <button
                   type="button"

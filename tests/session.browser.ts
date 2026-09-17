@@ -70,6 +70,7 @@ export async function checkSessionResume() {
       createElement(VoiceAssistant, {
         locale: "ko-KR",
         serverUrl: "/resume-test",
+        chatVisibility: "always",
         sessionKey: "resume",
         onCommand: async (call) => {
           calls.push(call.name);

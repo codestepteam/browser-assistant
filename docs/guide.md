@@ -82,7 +82,7 @@ const app = createApp({
 | `translations`                | Override UI text by English source phrase, e.g. `{'Hold to talk':'Press to speak'}` |
 | `screen.root`                 | Restrict extraction to a DOM root, supplied as a function                           |
 | `screen.exclude`              | Additional CSS selector to exclude                                                  |
-| `screen.requiresConfirmation` | Optional local action-confirmation policy                                           |
+| `screen.requiresConfirmation` | Optional forced confirmation; true adds a requirement, false leaves the AI decision |
 | `onReady`                     | Optional tool executor callback, useful for diagnostics and tests                   |
 
 The plain script supports `data-server-url`, `data-session-key`, `data-locale`, `data-time-zone`, `data-title`, `data-instructions`, and `data-site-context`. For functions, dynamic context or long text, load the script and call `BrowserAssistant.mount(options)`. Its return value unmounts the widget; call it on logout. Remount after changing site instructions for an existing voice connection. Language/time-zone changes restart the connection and re-read the screen.

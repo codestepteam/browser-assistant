@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0 — GPT-Live and npm distribution
+
+- GPT-Live voice with a GPT-5.6 Luna task backend, hold-to-talk input and idle closure.
+- AI-selected action confirmation with optional forced confirmation; removes safe/preview bypass markers.
+- Fix duplicate captions and clipped confirmation buttons; preserve viewport placement and session-only visibility.
+- Separate client installation from server deployment documentation.
+- Public npm packaging and verified-main automatic publication through GitHub Actions OIDC.
+
+Migration: update client and server together. Proxies must allow `/live`; `use_element` now requires `requireConfirmation`.
+
 ## 0.1.1 — Packaged documentation
 
 - Include the full tool examples and contribution guide in the installation archive.

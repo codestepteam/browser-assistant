@@ -29,7 +29,6 @@ function render() {
     td.className = "p-5";
     const edit = document.createElement("button");
     edit.type = "button";
-    edit.dataset.agentAction = "safe";
     edit.className =
       "rounded-lg border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50";
     edit.textContent = "Edit";

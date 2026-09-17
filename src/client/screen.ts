@@ -174,30 +174,9 @@ export function createScreenController(options: ScreenOptions = {}) {
       : undefined;
   };
   function requiresConfirmation(el: HTMLElement) {
-    if (options.requiresConfirmation) return options.requiresConfirmation(el);
-    if (el.closest('[data-agent-action="confirm"]')) return true;
-    if (
-      (el instanceof HTMLButtonElement || el instanceof HTMLInputElement) &&
-      el.type === "submit" &&
-      el.form
-    )
-      return true;
-    if (el instanceof HTMLAnchorElement) {
-      const url = new URL(el.href);
-      return (
-        url.origin !== location.origin ||
-        !["http:", "https:"].includes(url.protocol) ||
-        !!el.download ||
-        (!!el.target && el.target !== "_self")
-      );
-    }
-    return !(
-      el.closest(
-        '[data-agent-action="safe"],[data-agent-action="preview"],[data-agent-view]',
-      ) ||
-      el.matches(
-        'summary,[role="tab"],[role="option"],[role="combobox"],[role="checkbox"],[role="radio"],[data-slot="dialog-close"],[data-slot="sheet-close"]',
-      )
+    return (
+      !!el.closest('[data-agent-action="confirm"]') ||
+      options.requiresConfirmation?.(el) === true
     );
   }
   const valueOf = (el: HTMLElement) =>
@@ -515,8 +494,7 @@ export function createScreenController(options: ScreenOptions = {}) {
     )
       throw new Error("지금 조작할 수 없는 요소입니다. 화면을 다시 읽으세요.");
     if (
-      requiresConfirmation(el) &&
-      ["click", "check"].includes(input.action) &&
+      (requiresConfirmation(el) || input.requireConfirmation !== false) &&
       !confirmed
     )
       throw Object.assign(new Error(t("실행 전에 사용자 확인이 필요합니다.")), {

@@ -7,7 +7,7 @@ export async function checkScreen() {
   };
   const fixture = document.createElement("section");
   fixture.innerHTML =
-    '<h1>고객 관리</h1><div><div><span>홍길동 · 301호</span><button type="button" data-agent-action="safe">수정</button></div></div><form><label>고객 이름 <input value="홍길동"></label><input type="password" value="SECRET_VALUE"><input type="checkbox" aria-label="선택"><input type="submit" value="확정" aria-label="입력형 저장"><span data-agent-exclude>PRIVATE_TEXT</span><button>저장</button></form><div role="status"></div>';
+    '<h1>고객 관리</h1><div><div><span>홍길동 · 301호</span><button type="button">수정</button></div></div><form><label>고객 이름 <input value="홍길동"></label><input type="password" value="SECRET_VALUE"><input type="checkbox" aria-label="선택"><input type="submit" value="확정" aria-label="입력형 저장"><span data-agent-exclude>PRIVATE_TEXT</span><button>저장</button></form><div role="status"></div>';
   document.body.prepend(fixture);
   let saves = 0,
     changes = 0;
@@ -54,6 +54,44 @@ export async function checkScreen() {
       !json.includes("SECRET_VALUE") && !json.includes("PRIVATE_TEXT"),
       "Sensitive text leaked",
     );
+    assert(
+      view.controls.find((c) => c.name === "수정")?.requiresConfirmation ===
+        false,
+      "Ordinary buttons must leave confirmation to the AI",
+    );
+    assert(
+      view.controls.find((c) => c.name === "저장")?.requiresConfirmation ===
+        false,
+      "Submit type alone must not override the AI decision",
+    );
+    const edit = fixture.querySelector<HTMLButtonElement>(
+      'button[type="button"]',
+    )!;
+    edit.dataset.agentAction = "confirm";
+    const enforced = createScreenController({
+      root: () => fixture,
+      requiresConfirmation: () => false,
+    });
+    const forcedView = enforced.view();
+    const forced = forcedView.controls.find((c) => c.name === "수정")!;
+    assert(
+      forced.requiresConfirmation === true,
+      "A false callback must not override explicit confirm",
+    );
+    let blocked = false;
+    try {
+      enforced.operate("use_element", {
+        ref: forced.ref,
+        action: "click",
+        value: null,
+        requireConfirmation: false,
+      });
+    } catch {
+      blocked = true;
+    }
+    assert(blocked, "Direct operations must enforce confirm too");
+    edit.removeAttribute("data-agent-action");
+    view = screen.view();
     const node = view.controls.find((c) => c.name === "고객 이름")!;
     const result = await tools.execute("use_element", {
       ref: node.ref,
@@ -61,6 +99,7 @@ export async function checkScreen() {
       value: "김검증",
       expectedRevision: view.revision,
       requestId: "fill",
+      requireConfirmation: false,
     });
     assert(
       result.ok &&
@@ -76,6 +115,7 @@ export async function checkScreen() {
       value: null,
       expectedRevision: view.revision,
       requestId: "save",
+      requireConfirmation: true,
     };
     const waiting = tools.execute("use_element", input);
     await Promise.resolve();

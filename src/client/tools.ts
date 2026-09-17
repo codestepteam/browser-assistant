@@ -65,9 +65,9 @@ export function createConversationTools(host: {
       let confirmed = false;
       if (
         name === "use_element" &&
-        ["click", "check"].includes(input.action) &&
-        current.controls?.find((control: any) => control.ref === input.ref)
-          ?.requiresConfirmation
+        (input.requireConfirmation ||
+          current.controls?.find((control: any) => control.ref === input.ref)
+            ?.requiresConfirmation)
       ) {
         if (!host.confirm)
           throw Object.assign(

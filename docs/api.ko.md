@@ -29,6 +29,7 @@
 {
   "ref": "e2",
   "action": "fill",
+  "requireConfirmation": false,
   "value": "Mina",
   "expectedRevision": "page-token:1",
   "requestId": "fill-1"
@@ -63,3 +64,5 @@
 HTTP 오류는 `{error,code,requestId}`, 도구 오류는 `{ok:false,state:{view},error:{code,message}}`입니다. 인증·출처·입력 오류, 요청 한도, 서버 사용 중, AI 제공업체 오류를 코드로 구분합니다. 자세한 코드 목록은 영어 명세와 소스에 있습니다.
 
 `ok:true`는 로컬 조작의 성공을 뜻합니다. 실제 저장 완료를 뜻하지 않습니다. 로딩 상태, 안내·오류 문구와 최신 입력값·목록으로 결과를 확인해야 합니다. 네트워크 작업의 결과가 불명확하면 자동 반복하지 말고 불확실성을 설명해야 합니다.
+
+`use_element.requireConfirmation`은 필수 boolean입니다. AI가 현재 화면과 사용자 요청을 보고 확인 필요 여부를 결정합니다. 조회·검색·이동·일반 입력은 `false`, 최종 저장·삭제·결제·발송 및 영향이 불명확한 조작은 `true`입니다. `true`는 확인 요청이며 사용자 승인이 아닙니다. 사이트의 `data-agent-action="confirm"` 또는 `screen.requiresConfirmation`의 `true`는 AI의 `false`보다 우선합니다. 강제 확인은 모든 `use_element` 조작에 적용됩니다. `safe`·`preview`로 확인을 생략하는 설정은 지원하지 않습니다. 클라이언트와 서버를 함께 업데이트하세요.

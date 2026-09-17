@@ -48,6 +48,7 @@ export type VoiceProps = {
   instructions?: string;
   siteContext?: string;
   embedded?: boolean;
+  chatVisibility?: "session" | "always";
   pendingAction?: ReactNode;
   onInterrupt?: () => void;
   onCommand: (command: ToolCall) => Promise<unknown>;
@@ -63,6 +64,7 @@ export function VoiceAssistant({
   instructions = "",
   siteContext = "",
   embedded = false,
+  chatVisibility = "session",
   pendingAction,
   onInterrupt,
   onCommand,
@@ -1045,11 +1047,18 @@ export function VoiceAssistant({
           : working
             ? t("화면을 확인하고 작업하고 있어요…")
             : latestReply || t("무엇을 도와드릴까요?"));
+  const showConversation =
+    chatVisibility === "always" ||
+    phase !== "idle" ||
+    busy ||
+    !!pendingAction ||
+    !!voiceError;
   return (
     <div
+      style={{ pointerEvents: "auto" }}
       className={embedded ? "relative w-full p-2" : "relative z-[2147483647]"}
     >
-      {(expanded || pendingAction) && (
+      {showConversation && (expanded || pendingAction) && (
         <section
           id="assistant-conversation"
           aria-label={expanded ? t("대화 내용") : t("실행 확인")}
@@ -1060,7 +1069,7 @@ export function VoiceAssistant({
             " flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white text-slate-800 shadow-xl"
           }
         >
-          <header className="flex items-center gap-2 border-b border-slate-100 p-3">
+          <header className="flex shrink-0 items-center gap-2 border-b border-slate-100 p-3">
             <strong className="flex-1 text-sm">
               {title ?? t("사이트 도우미")}
             </strong>
@@ -1108,7 +1117,6 @@ export function VoiceAssistant({
                   {message.text}
                 </p>
               ))}
-              {partial && <p className="text-sm">{partial}</p>}
               {working && (
                 <p role="status" className="text-xs text-emerald-700">
                   {t("화면을 확인하고 작업하고 있습니다…")}
@@ -1127,7 +1135,7 @@ export function VoiceAssistant({
           {pendingAction}
           {expanded && (
             <form
-              className="flex gap-2 border-t border-slate-100 p-3"
+              className="flex shrink-0 gap-2 border-t border-slate-100 p-3"
               onSubmit={(e) => {
                 e.preventDefault();
                 void submit();
@@ -1154,62 +1162,64 @@ export function VoiceAssistant({
         </section>
       )}
       <div className={embedded ? "flex items-end gap-2" : ""}>
-        <div
-          className={
-            (embedded
-              ? "min-w-0 flex-1"
-              : "fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 w-[min(34rem,calc(100vw-10rem))] [transform:translateX(-50%)]") +
-            " flex min-h-14 items-center overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 text-slate-700 shadow-lg backdrop-blur-sm"
-          }
-        >
-          <button
-            type="button"
-            aria-label={t("대화 펼치기 또는 접기")}
-            aria-expanded={expanded}
-            aria-controls="assistant-conversation"
-            onClick={toggleConversation}
-            className="flex min-w-0 flex-1 items-center gap-2 px-3 py-3 text-left text-sm focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-emerald-600"
+        {showConversation && (
+          <div
+            className={
+              (embedded
+                ? "min-w-0 flex-1"
+                : "fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 w-[min(34rem,calc(100vw-10rem))] [transform:translateX(-50%)]") +
+              " flex min-h-14 items-center overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 text-slate-700 shadow-lg backdrop-blur-sm"
+            }
           >
-            <span
-              data-floating-response
-              role="status"
-              aria-live="polite"
-              className="line-clamp-2 min-w-0 flex-1 break-words"
-            >
-              {floatingText}
-            </span>
-            <svg
-              aria-hidden="true"
-              className={
-                "size-4 shrink-0 text-slate-400 " +
-                (expanded ? "rotate-180" : "")
-              }
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="m6 15 6-6 6 6" />
-            </svg>
-          </button>
-          {(working || phase === "ready") && !expanded && (
             <button
               type="button"
-              aria-label={t("실행 중지")}
-              onClick={cancelRun}
-              className="mr-2 flex size-9 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-emerald-600"
+              aria-label={t("대화 펼치기 또는 접기")}
+              aria-expanded={expanded}
+              aria-controls="assistant-conversation"
+              onClick={toggleConversation}
+              className="flex min-w-0 flex-1 items-center gap-2 px-3 py-3 text-left text-sm focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-emerald-600"
             >
+              <span
+                data-floating-response
+                role="status"
+                aria-live="polite"
+                className="line-clamp-2 min-w-0 flex-1 break-words"
+              >
+                {floatingText}
+              </span>
               <svg
                 aria-hidden="true"
-                className="size-4"
+                className={
+                  "size-4 shrink-0 text-slate-400 " +
+                  (expanded ? "rotate-180" : "")
+                }
                 viewBox="0 0 24 24"
-                fill="currentColor"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
               >
-                <rect x="5" y="5" width="14" height="14" rx="3" />
+                <path d="m6 15 6-6 6 6" />
               </svg>
             </button>
-          )}
-        </div>
+            {(working || phase === "ready") && !expanded && (
+              <button
+                type="button"
+                aria-label={t("실행 중지")}
+                onClick={cancelRun}
+                className="mr-2 flex size-9 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-emerald-600"
+              >
+                <svg
+                  aria-hidden="true"
+                  className="size-4"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <rect x="5" y="5" width="14" height="14" rx="3" />
+                </svg>
+              </button>
+            )}
+          </div>
+        )}
         <button
           type="button"
           data-voice-fab

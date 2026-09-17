@@ -178,6 +178,7 @@ export async function checkVoiceHold() {
     const props = {
       locale: "ko-KR" as const,
       serverUrl: "/assistant",
+      chatVisibility: "always" as const,
       sessionKey: "voice-test",
       context: {},
       onCommand: async () => {
@@ -318,6 +319,30 @@ export async function checkVoiceHold() {
     require(!container.querySelector(
       '[aria-label="대화 내용"]',
     ), "Voice must leave history collapsed");
+    container
+      .querySelector<HTMLButtonElement>('[aria-label="대화 펼치기 또는 접기"]')!
+      .click();
+    await tick();
+    const captionCopies = (text: string) =>
+      [...container.querySelectorAll('[aria-label="대화 내용"] p')].filter(
+        (p) => p.textContent === text,
+      ).length;
+    require(captionCopies("공실만 모아뒀어요.") ===
+      1, "Live caption must render once while the session is active");
+    emit({
+      type: "session.output_transcript.delta",
+      start_ms: 900,
+      end_ms: 1000,
+      delta: " 확인하세요.",
+    });
+    await tick();
+    require(captionCopies("공실만 모아뒀어요. 확인하세요.") === 1 &&
+      captionCopies("공실만 모아뒀어요.") ===
+        0, "Further caption fragments must update the same row without a duplicate preview");
+    container
+      .querySelector<HTMLButtonElement>('[aria-label="대화 내용 접기"]')!
+      .click();
+    await tick();
     // Actual received speech keeps the session active, independent of caption events.
     for (let i = 0; i < 7; i++) {
       energy += 0.1;
