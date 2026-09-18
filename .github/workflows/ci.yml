@@ -1,7 +1,7 @@
 name: Verify
 on:
   push:
-    branches: [main]
+    branches: [main, production]
   pull_request:
   workflow_dispatch:
 permissions:
@@ -44,11 +44,12 @@ jobs:
             test-results/
   publish:
     needs: verify
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    if: github.ref == 'refs/heads/production' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    environment: production
     runs-on: ubuntu-latest
     timeout-minutes: 15
     concurrency:
-      group: npm-publish-main
+      group: npm-publish-production
       cancel-in-progress: false
     permissions:
       contents: read
@@ -62,14 +63,15 @@ jobs:
           registry-url: https://registry.npmjs.org
       - run: npm install --global npm@11
       - run: npm ci
-      - name: Check main is still this commit
+      - name: Check production is still this commit
         id: head
         run: |
-          remote_head=$(git ls-remote origin refs/heads/main | cut -f1)
+          set -euo pipefail
+          remote_head=$(git ls-remote origin refs/heads/production | cut -f1)
           if [ "$remote_head" = "$GITHUB_SHA" ]; then
             echo "current=true" >> "$GITHUB_OUTPUT"
           else
-            echo "A newer main commit exists; skipping this publication."
+            echo "A newer production commit exists or the branch is unavailable; skipping this publication."
             echo "current=false" >> "$GITHUB_OUTPUT"
           fi
       - name: Select unpublished version

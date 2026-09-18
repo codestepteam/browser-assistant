@@ -130,4 +130,4 @@ The AI decides whether to request confirmation from the user request and visible
 
 ## Automatic npm publishing
 
-The CI/CD workflow publishes a new patch version after a `main` push passes all checks. Initial npm authentication and trusted-publisher setup are required. See [publishing setup and behavior](docs/publishing.md).
+The CI/CD workflow verifies `main` and `production`, then publishes a new patch version only after a protected `production` push passes all checks. Initial npm authentication and trusted-publisher setup are required. See [publishing setup and behavior](docs/publishing.md).
