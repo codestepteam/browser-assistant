@@ -90,15 +90,25 @@ jobs:
           import { readFileSync } from 'node:fs';
           const { name } = JSON.parse(readFileSync('package.json', 'utf8'));
           const url = `https://registry.npmjs.org/${encodeURIComponent(name)}/${process.env.RELEASE_VERSION}`;
-          for (let attempt = 0; attempt < 6; attempt++) {
-            const response = await fetch(url);
-            if (response.ok) {
+          const deadline = Date.now() + 10 * 60_000;
+          for (let attempt = 1; attempt <= 60 && Date.now() < deadline; attempt++) {
+            let response;
+            try {
+              response = await fetch(url, {
+                signal: AbortSignal.timeout(Math.max(1, Math.min(10_000, deadline - Date.now()))),
+              });
+            } catch (error) {
+              console.log(`Registry check failed on attempt ${attempt}: ${error instanceof Error ? error.message : String(error)}`);
+            }
+            if (response?.ok) {
               const published = await response.json();
               if (published.gitHead !== process.env.GITHUB_SHA) throw Error('Published commit does not match this run');
               console.log(`Verified ${name}@${published.version} (${published.gitHead})`);
               process.exit(0);
             }
-            await new Promise(resolve => setTimeout(resolve, 5000));
+            if (response) console.log(`Registry returned ${response.status} on attempt ${attempt}; retrying.`);
+            const remaining = deadline - Date.now();
+            if (remaining > 0) await new Promise(resolve => setTimeout(resolve, Math.min(10_000, remaining)));
           }
           throw Error('Published version could not be verified');
           JS
