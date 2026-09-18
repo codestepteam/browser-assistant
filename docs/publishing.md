@@ -37,6 +37,7 @@ With npm 11.15+ you can also configure trust using the CLI; npm may request two-
 npm trust github @codestepteam/browser-assistant \
   --repo codestepteam/browser-assistant \
   --file ci.yml \
+  --env production \
   --allow-publish \
   --yes
 ```
