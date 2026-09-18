@@ -36,6 +36,10 @@ test("CI verifies both branches but publishes only the current production commit
   assert.match(workflow, /if: github\.ref == 'refs\/heads\/production'/);
   assert.match(workflow, /environment: production/);
   assert.match(workflow, /git ls-remote origin refs\/heads\/production/);
+  assert.match(workflow, /10 \* 60_000/);
+  assert.match(workflow, /attempt <= 60/);
+  assert.match(workflow, /AbortSignal\.timeout/);
+  assert.match(workflow, /Published commit does not match this run/);
   assert.doesNotMatch(workflow, /github\.ref == 'refs\/heads\/main'/);
 });
 

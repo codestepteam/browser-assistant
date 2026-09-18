@@ -14,6 +14,7 @@ Package: `@codestepteam/browser-assistant`. Registry: `https://registry.npmjs.or
 - The generated version is written only in CI, avoiding release commits that trigger another release.
 - A rerun skips a commit already present in npm `gitHead` metadata.
 - Publishing jobs run one at a time. After publishing, the job verifies the version's `gitHead` against the source commit.
+- npm may process a successful publication asynchronously; the verification waits up to 10 minutes for the version to appear.
 - The `latest` npm tag follows successful publications. Installed applications still need `npm update` and a rebuild. A pinned CDN URL stays pinned.
 
 ## First publication and trust setup
@@ -68,7 +69,7 @@ This URL becomes usable only after that version is public. The CDN serves the cl
 
 ## 한국어 요약
 
-`main`과 `production`에 푸시하면 전체 검사를 실행합니다. `main`은 개발용 검사만 실행하며, 보호된 `production`에 반영된 커밋만 전체 검사 성공 후 npm에 새 버전을 자동 게시합니다. 원격 `production`의 최신 커밋이 실행 커밋과 다르면 게시를 건너뜁니다. 같은 버전은 덮어쓰지 않고 패치 번호를 증가시키며, 같은 커밋의 재실행도 건너뜁니다. 버전 변경을 저장소에 다시 커밋하지 않아 무한 배포가 발생하지 않습니다.
+`main`과 `production`에 푸시하면 전체 검사를 실행합니다. `main`은 개발용 검사만 실행하며, 보호된 `production`에 반영된 커밋만 전체 검사 성공 후 npm에 새 버전을 자동 게시합니다. 원격 `production`의 최신 커밋이 실행 커밋과 다르면 게시를 건너뜁니다. npm 처리가 지연되면 게시 검증은 최대 10분 동안 버전이 나타나는지 확인합니다. 같은 버전은 덮어쓰지 않고 패치 번호를 증가시키며, 같은 커밋의 재실행도 건너뜁니다. 버전 변경을 저장소에 다시 커밋하지 않아 무한 배포가 발생하지 않습니다.
 
 최초 게시에는 npm 로그인과 `@codestepteam` 게시 권한이 필요합니다. 최초 게시 후 npm의 신뢰 게시 설정에 `codestepteam/browser-assistant`, `ci.yml`, `production` 환경, 직접 게시 허용을 등록합니다. 이후 GitHub Actions는 장기 토큰 없이 게시합니다.
 
