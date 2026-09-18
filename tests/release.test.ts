@@ -1,6 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { releaseVersion } from "../scripts/prepare-release.js";
+import { readFileSync } from "node:fs";
+import {
+  assertProductionRef,
+  productionRef,
+  releaseVersion,
+} from "../scripts/prepare-release.js";
 
 test("release versions increase without duplicate publication or lexical ordering errors", () => {
   const sha = "a".repeat(40);
@@ -20,4 +25,22 @@ test("release versions increase without duplicate publication or lexical orderin
   );
   assert.throws(() => releaseVersion("invalid", {}, sha));
   assert.throws(() => releaseVersion("0.2.0", {}, ""));
+});
+
+test("CI verifies both branches but publishes only the current production commit", () => {
+  const workflow = readFileSync(
+    new URL("../.github/workflows/ci.yml", import.meta.url),
+    "utf8",
+  );
+  assert.match(workflow, /branches: \[main, production\]/);
+  assert.match(workflow, /if: github\.ref == 'refs\/heads\/production'/);
+  assert.match(workflow, /environment: production/);
+  assert.match(workflow, /git ls-remote origin refs\/heads\/production/);
+  assert.doesNotMatch(workflow, /github\.ref == 'refs\/heads\/main'/);
+});
+
+test("release preparation rejects non-production refs", () => {
+  assert.equal(productionRef, "refs/heads/production");
+  assert.throws(() => assertProductionRef("refs/heads/main"));
+  assert.doesNotThrow(() => assertProductionRef(productionRef));
 });

@@ -3,6 +3,7 @@ import { execFileSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
 
 type Published = Record<string, { gitHead?: string }>;
+export const productionRef = "refs/heads/production";
 const stable = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
 const parts = (version: string) => version.split(".").map(Number);
 function compare(a: string, b: string) {
@@ -24,10 +25,16 @@ export function releaseVersion(base: string, versions: Published, sha: string) {
   return `${major}.${minor}.${patch + 1}`;
 }
 
+export function assertProductionRef(ref: string | undefined) {
+  if (ref !== productionRef)
+    throw Error("npm publication requires the production branch");
+}
+
 if (
   process.argv[1] &&
   import.meta.url === pathToFileURL(process.argv[1]).href
 ) {
+  assertProductionRef(process.env.GITHUB_REF);
   const pkg = JSON.parse(readFileSync("package.json", "utf8"));
   const response = await fetch(
     `https://registry.npmjs.org/${encodeURIComponent(pkg.name)}`,
