@@ -1098,7 +1098,7 @@ export function VoiceAssistant({
           style={{
             border: "1px solid #e2e8f0",
             boxShadow:
-              "0 1px 2px rgba(15, 23, 42, 0.05), 0 8px 24px rgba(15, 23, 42, 0.08)",
+              "0 2px 8px rgba(15, 23, 42, 0.06), 0 12px 32px rgba(15, 23, 42, 0.12)",
           }}
           className={
             (embedded
