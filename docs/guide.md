@@ -84,8 +84,12 @@ const app = createApp({
 | `screen.exclude`              | Additional CSS selector to exclude                                                  |
 | `screen.requiresConfirmation` | Optional forced confirmation; true adds a requirement, false leaves the AI decision |
 | `onReady`                     | Optional tool executor callback, useful for diagnostics and tests                   |
+| `chatVisibility`              | When the response strip appears: `session` (default) or `always`                    |
+| `voiceEnabled`                | Hold-to-talk voice. Default `true`. `false` shows a chat FAB instead of the mic     |
 
-The plain script supports `data-server-url`, `data-session-key`, `data-locale`, `data-time-zone`, `data-title`, `data-instructions`, and `data-site-context`. For functions, dynamic context or long text, load the script and call `BrowserAssistant.mount(options)`. Its return value unmounts the widget; call it on logout. Remount after changing site instructions for an existing voice connection. Language/time-zone changes restart the connection and re-read the screen.
+With `voiceEnabled={false}`, the bottom-right control is a chat icon. Tapping it expands the conversation and focuses the composer. Microphone permission and `/live` are never requested; typed messages still use `/chat` and screen tools.
+
+The plain script supports `data-server-url`, `data-session-key`, `data-locale`, `data-time-zone`, `data-title`, `data-instructions`, `data-site-context`, `data-chat-visibility`, and `data-voice-enabled`. For functions, dynamic context or long text, load the script and call `BrowserAssistant.mount(options)`. Its return value unmounts the widget; call it on logout. Remount after changing site instructions for an existing voice connection. Language/time-zone changes restart the connection and re-read the screen.
 
 ## React and Next.js
 

@@ -20,6 +20,59 @@ test("press-to-talk reuses permission, mutes on release, and runs only while aut
   expect(result.ok).toBe(true);
   expect(result.initialPermissionRequests).toBe(1);
 });
+test("chat-only mode skips the microphone and opens the composer from the chat FAB", async ({
+  page,
+}) => {
+  await page.goto("/tests/browser.html");
+  const result = await page.evaluate(async () => {
+    const module = await import("/tests/voice.browser.ts" as string);
+    return module.checkVoiceDisabled();
+  });
+  expect(result.ok).toBe(true);
+  expect(result.microphoneRequests).toBe(0);
+  expect(result.liveRequests).toBe(0);
+  expect(result.chatRequests).toBeGreaterThan(0);
+});
+test("widget voiceEnabled=false replaces the mic FAB and focuses the input", async ({
+  page,
+}) => {
+  let mediaCalls = 0;
+  await page.exposeFunction("recordMediaCall", () => {
+    mediaCalls++;
+  });
+  await page.goto("/tests/browser.html");
+  await page.evaluate(async () => {
+    Object.defineProperty(navigator.mediaDevices, "getUserMedia", {
+      configurable: true,
+      value: async () => {
+        await (
+          window as unknown as { recordMediaCall: () => Promise<void> }
+        ).recordMediaCall();
+        throw new Error("microphone should not be requested");
+      },
+    });
+    const m = await import("/src/client/widget.tsx" as string);
+    m.mount({
+      serverUrl: "/assistant",
+      locale: "en-US",
+      sessionKey: "chat-only-widget",
+      voiceEnabled: false,
+    });
+  });
+  await expect(
+    page.getByRole("button", { name: "Hold to talk", exact: true }),
+  ).toHaveCount(0);
+  await expect(page.locator("[data-voice-fab]")).toHaveCount(0);
+  const fab = page.getByRole("button", { name: "Open chat", exact: true });
+  await expect(fab).toBeVisible();
+  await expect(page.locator("[data-floating-response]")).toBeVisible();
+  await fab.click();
+  await expect(
+    page.getByRole("textbox", { name: "Message the assistant" }),
+  ).toBeFocused();
+  expect(mediaCalls).toBe(0);
+  await expect(page.getByText("Allow microphone access")).toHaveCount(0);
+});
 test("pending tasks resume from a new snapshot and stop rejects late tools", async ({
   page,
 }) => {
