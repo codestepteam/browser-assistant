@@ -20,6 +20,123 @@ test("press-to-talk reuses permission, mutes on release, and runs only while aut
   expect(result.ok).toBe(true);
   expect(result.initialPermissionRequests).toBe(1);
 });
+test("chat-only mode skips the microphone and opens the composer from the chat FAB", async ({
+  page,
+}) => {
+  await page.goto("/tests/browser.html");
+  const result = await page.evaluate(async () => {
+    const module = await import("/tests/voice.browser.ts" as string);
+    return module.checkVoiceDisabled();
+  });
+  expect(result.ok).toBe(true);
+  expect(result.microphoneRequests).toBe(0);
+  expect(result.liveRequests).toBe(0);
+  expect(result.chatRequests).toBeGreaterThan(0);
+});
+test("widget voiceEnabled=false replaces the mic FAB and focuses the input", async ({
+  page,
+}) => {
+  let mediaCalls = 0;
+  await page.exposeFunction("recordMediaCall", () => {
+    mediaCalls++;
+  });
+  await page.goto("/tests/browser.html");
+  await page.evaluate(async () => {
+    Object.defineProperty(navigator.mediaDevices, "getUserMedia", {
+      configurable: true,
+      value: async () => {
+        await (
+          window as unknown as { recordMediaCall: () => Promise<void> }
+        ).recordMediaCall();
+        throw new Error("microphone should not be requested");
+      },
+    });
+    const m = await import("/src/client/widget.tsx" as string);
+    m.mount({
+      serverUrl: "/assistant",
+      locale: "en-US",
+      sessionKey: "chat-only-widget",
+      voiceEnabled: false,
+    });
+  });
+  await expect(
+    page.getByRole("button", { name: "Hold to talk", exact: true }),
+  ).toHaveCount(0);
+  await expect(page.locator("[data-voice-fab]")).toHaveCount(0);
+  const fab = page.getByRole("button", { name: "Open chat", exact: true });
+  await expect(fab).toBeVisible();
+  await expect(page.locator("[data-floating-response]")).toHaveCount(0);
+  await fab.click();
+  await expect(
+    page.getByRole("textbox", { name: "Message the assistant" }),
+  ).toBeFocused();
+  const panel = page.getByRole("region", { name: "Conversation", exact: true });
+  await expect(panel).toBeVisible();
+  const chrome = await panel.evaluate((el) => {
+    const style = getComputedStyle(el);
+    return {
+      borderTopWidth: style.borderTopWidth,
+      borderTopColor: style.borderTopColor,
+      boxShadow: style.boxShadow,
+    };
+  });
+  expect(chrome.borderTopWidth).toBe("1px");
+  expect(chrome.borderTopColor).toBe("rgb(226, 232, 240)");
+  expect(chrome.boxShadow).not.toBe("none");
+  const fabBox = await page.locator("[data-chat-fab]").boundingBox();
+  const panelBox = await panel.boundingBox();
+  expect(fabBox).not.toBeNull();
+  expect(panelBox).not.toBeNull();
+  expect(
+    Math.abs(panelBox!.x + panelBox!.width - (fabBox!.x + fabBox!.width)),
+  ).toBeLessThan(4);
+  expect(panelBox!.y + panelBox!.height).toBeLessThanOrEqual(fabBox!.y);
+  expect(fabBox!.y - (panelBox!.y + panelBox!.height)).toBeLessThan(40);
+  await expect(page.locator("[data-floating-response]")).toHaveCount(0);
+  await expect(page.getByText("How can I help?")).toHaveCount(0);
+  expect(mediaCalls).toBe(0);
+  await expect(page.getByText("Allow microphone access")).toHaveCount(0);
+});
+test("assistant transcript renders Markdown instead of raw markers", async ({
+  page,
+}) => {
+  await page.goto("/tests/browser.html");
+  await page.evaluate(async () => {
+    sessionStorage.setItem(
+      "browser-assistant:v1:/assistant:markdown",
+      JSON.stringify({
+        messages: [
+          {
+            id: "md-1",
+            role: "assistant",
+            text: "**장재휴**\n\n- 누적 구매액: **₩1,000**\n- 참고: `AB12`\n\n<script>alert(1)</script>",
+            at: new Date().toISOString(),
+          },
+        ],
+        pending: null,
+        open: false,
+      }),
+    );
+    const m = await import("/src/client/widget.tsx" as string);
+    m.mount({
+      serverUrl: "/assistant",
+      locale: "ko-KR",
+      sessionKey: "markdown",
+      voiceEnabled: false,
+    });
+  });
+  await page.getByRole("button", { name: "대화 열기", exact: true }).click();
+  const panel = page.getByRole("region", { name: "대화 내용", exact: true });
+  await expect(panel.locator("strong", { hasText: "장재휴" })).toBeVisible();
+  await expect(
+    panel.getByRole("listitem").filter({ hasText: "누적 구매액" }),
+  ).toBeVisible();
+  await expect(panel.locator("strong", { hasText: "₩1,000" })).toBeVisible();
+  await expect(panel.locator("code", { hasText: "AB12" })).toBeVisible();
+  await expect(panel.locator("script")).toHaveCount(0);
+  await expect(panel.getByText("<script>alert(1)</script>")).toBeVisible();
+  await expect(panel.getByText("**장재휴**")).toHaveCount(0);
+});
 test("pending tasks resume from a new snapshot and stop rejects late tools", async ({
   page,
 }) => {

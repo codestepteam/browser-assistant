@@ -61,6 +61,8 @@ export const english = {
   "메시지 보내기": "Send message",
   보내기: "Send",
   "대화 펼치기 또는 접기": "Expand or collapse conversation",
+  "대화 열기": "Open chat",
+  "대화 닫기": "Close chat",
   "녹음 중 · 놓으면 전송": "Recording · release to send",
   "누르고 말하기": "Hold to talk",
   "버튼을 누르는 동안 말하고, 놓으면 전송합니다. 전체 대화는 옆의 응답을 눌러 펼칠 수 있습니다.":

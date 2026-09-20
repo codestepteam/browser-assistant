@@ -1,6 +1,7 @@
 import { createTranslator, type Locale } from "../i18n.js";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { toolCallSchema, type ToolCall, type ToolResult } from "../protocol.js";
+import { MarkdownMessage } from "./markdown.js";
 type SavedSession = {
   messages: Message[];
   pending: string | null;
@@ -49,6 +50,7 @@ export type VoiceProps = {
   siteContext?: string;
   embedded?: boolean;
   chatVisibility?: "session" | "always";
+  voiceEnabled?: boolean;
   pendingAction?: ReactNode;
   onInterrupt?: () => void;
   onCommand: (command: ToolCall) => Promise<unknown>;
@@ -65,6 +67,7 @@ export function VoiceAssistant({
   siteContext = "",
   embedded = false,
   chatVisibility = "session",
+  voiceEnabled = true,
   pendingAction,
   onInterrupt,
   onCommand,
@@ -135,10 +138,27 @@ export function VoiceAssistant({
   const expandedRef = useRef(false);
   expandedRef.current = expanded;
   const transcript = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const focusComposer = useRef(false);
   useEffect(() => {
     const el = transcript.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages, partial, expanded]);
+  useEffect(() => {
+    if (!focusComposer.current || !expanded) return;
+    focusComposer.current = false;
+    inputRef.current?.focus();
+  }, [expanded]);
+  useEffect(() => {
+    if (voiceEnabled || !pendingAction || expandedRef.current) return;
+    expandedRef.current = true;
+    setExpanded(true);
+    saveSession(scope, {
+      messages: historyMessages.current,
+      pending: pendingRun.current,
+      open: true,
+    });
+  }, [pendingAction, voiceEnabled, scope]);
   scopeRef.current = scope;
   function stop() {
     onInterrupt?.();
@@ -608,6 +628,7 @@ export function VoiceAssistant({
     }
   }
   async function microphone(epoch: number) {
+    if (!voiceEnabled) return null;
     if (
       stream.current
         ?.getAudioTracks()
@@ -638,7 +659,7 @@ export function VoiceAssistant({
     return microphoneRequest.current;
   }
   async function start() {
-    if (voiceAbort.current || connection.current) return;
+    if (!voiceEnabled || voiceAbort.current || connection.current) return;
     setVoiceError("");
     setPhase("connecting");
     const epoch = voiceGeneration.current,
@@ -653,7 +674,7 @@ export function VoiceAssistant({
         );
       // Permission denial or a released first hold must not create a billable session.
       const media = await microphone(epoch);
-      if (epoch !== voiceGeneration.current) return;
+      if (!media || epoch !== voiceGeneration.current) return;
       if (!held.current) {
         setPhase("idle");
         return;
@@ -844,7 +865,7 @@ export function VoiceAssistant({
     setPartial("");
   }
   function beginHold() {
-    if (held.current || textBusy.current) return;
+    if (!voiceEnabled || held.current || textBusy.current) return;
     held.current = true;
     const hold = ++holdGeneration.current;
     lastActivity.current = performance.now();
@@ -863,6 +884,7 @@ export function VoiceAssistant({
   }
   async function captureHold(hold: number, epoch: number) {
     if (
+      !voiceEnabled ||
       !held.current ||
       hold !== holdGeneration.current ||
       epoch !== voiceGeneration.current
@@ -870,6 +892,7 @@ export function VoiceAssistant({
       return;
     try {
       const media = await microphone(epoch);
+      if (!media) return;
       if (
         !held.current ||
         hold !== holdGeneration.current ||
@@ -1029,16 +1052,25 @@ export function VoiceAssistant({
       open,
     });
   }
+  function toggleChatComposer() {
+    if (expandedRef.current) {
+      toggleConversation();
+      return;
+    }
+    focusComposer.current = true;
+    toggleConversation();
+  }
   const button =
     "rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-emerald-600 disabled:opacity-50";
   const working = busy || phase === "working" || phase === "speaking";
   const latestReply = [...messages]
     .reverse()
     .find((message) => message.role === "assistant")?.text;
+  const visibleVoiceError = voiceEnabled ? voiceError : "";
   const floatingText = recording
     ? t("누르는 동안 듣고 있어요. 놓으면 마이크가 꺼집니다.")
     : error ||
-      voiceError ||
+      visibleVoiceError ||
       partial ||
       (pendingAction
         ? t("실행할 내용을 확인해 주세요.")
@@ -1048,11 +1080,12 @@ export function VoiceAssistant({
             ? t("화면을 확인하고 작업하고 있어요…")
             : latestReply || t("무엇을 도와드릴까요?"));
   const showConversation =
+    !voiceEnabled ||
     chatVisibility === "always" ||
     phase !== "idle" ||
     busy ||
     !!pendingAction ||
-    !!voiceError;
+    !!visibleVoiceError;
   return (
     <div
       style={{ pointerEvents: "auto" }}
@@ -1062,11 +1095,18 @@ export function VoiceAssistant({
         <section
           id="assistant-conversation"
           aria-label={expanded ? t("대화 내용") : t("실행 확인")}
+          style={{
+            border: "1px solid #e2e8f0",
+            boxShadow:
+              "0 2px 8px rgba(15, 23, 42, 0.06), 0 12px 32px rgba(15, 23, 42, 0.12)",
+          }}
           className={
             (embedded
               ? "mb-3 max-h-[min(45dvh,420px)] w-full"
-              : "fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-1/2 max-h-[min(65dvh,640px)] w-[420px] max-w-[calc(100vw-2rem)] [transform:translateX(-50%)]") +
-            " flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white text-slate-800 shadow-xl"
+              : voiceEnabled
+                ? "fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-1/2 max-h-[min(65dvh,640px)] w-[420px] max-w-[calc(100vw-2rem)] [transform:translateX(-50%)]"
+                : "fixed right-4 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] max-h-[min(65dvh,640px)] w-[420px] max-w-[calc(100vw-2rem)]") +
+            " flex flex-col overflow-hidden rounded-2xl bg-white text-slate-800"
           }
         >
           <header className="flex shrink-0 items-center gap-2 border-b border-slate-100 p-3">
@@ -1103,31 +1143,37 @@ export function VoiceAssistant({
                   {t("이 화면에서 하고 싶은 일을 알려주세요.")}
                 </p>
               )}
-              {messages.map((message) => (
-                <p
-                  key={message.id}
-                  className={
-                    message.role === "user"
-                      ? "ml-6 whitespace-pre-wrap break-words rounded-xl bg-emerald-50 p-3 text-sm"
-                      : message.role === "tool"
-                        ? "text-xs text-slate-500"
-                        : "mr-3 whitespace-pre-wrap break-words text-sm"
-                  }
-                >
-                  {message.text}
-                </p>
-              ))}
+              {messages.map((message) =>
+                message.role === "assistant" ? (
+                  <MarkdownMessage
+                    key={message.id}
+                    className="mr-3 text-sm text-slate-800"
+                    text={message.text}
+                  />
+                ) : (
+                  <p
+                    key={message.id}
+                    className={
+                      message.role === "user"
+                        ? "ml-6 whitespace-pre-wrap break-words rounded-xl bg-emerald-50 p-3 text-sm"
+                        : "text-xs text-slate-500"
+                    }
+                  >
+                    {message.text}
+                  </p>
+                ),
+              )}
               {working && (
                 <p role="status" className="text-xs text-emerald-700">
                   {t("화면을 확인하고 작업하고 있습니다…")}
                 </p>
               )}
-              {(error || voiceError) && (
+              {(error || visibleVoiceError) && (
                 <p
                   role="alert"
                   className="rounded-lg bg-amber-50 p-2 text-xs text-amber-900"
                 >
-                  {error || voiceError}
+                  {error || visibleVoiceError}
                 </p>
               )}
             </div>
@@ -1142,6 +1188,7 @@ export function VoiceAssistant({
               }}
             >
               <input
+                ref={inputRef}
                 className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-emerald-600"
                 aria-label={t("도우미에게 요청")}
                 placeholder={t("어떤 일을 도와드릴까요?")}
@@ -1162,7 +1209,7 @@ export function VoiceAssistant({
         </section>
       )}
       <div className={embedded ? "flex items-end gap-2" : ""}>
-        {showConversation && (
+        {voiceEnabled && showConversation && (
           <div
             className={
               (embedded
@@ -1220,65 +1267,96 @@ export function VoiceAssistant({
             )}
           </div>
         )}
-        <button
-          type="button"
-          data-voice-fab
-          aria-label={
-            recording ? t("녹음 중 · 놓으면 마이크 끄기") : t("누르고 말하기")
-          }
-          aria-pressed={recording}
-          aria-describedby="assistant-voice-hint"
-          disabled={busy}
-          className={
-            (embedded
-              ? "relative size-12"
-              : "fixed right-4 bottom-[calc(1rem+env(safe-area-inset-bottom))] size-14") +
-            " flex shrink-0 touch-none select-none items-center justify-center rounded-full text-white shadow-lg transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 disabled:opacity-50 " +
-            (recording
-              ? "bg-red-600 ring-4 ring-red-200"
-              : "bg-emerald-700 hover:bg-emerald-800")
-          }
-          onPointerDown={(e) => {
-            if (e.button !== 0) return;
-            e.preventDefault();
-            e.currentTarget.setPointerCapture(e.pointerId);
-            void beginHold();
-          }}
-          onPointerUp={() => endHold(true)}
-          onPointerCancel={() => endHold(false)}
-          onLostPointerCapture={() => {
-            if (held.current) endHold(false);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Escape") endHold(false);
-            if ([" ", "Enter"].includes(e.key)) {
-              e.preventDefault();
-              if (!e.repeat) void beginHold();
+        {voiceEnabled ? (
+          <button
+            type="button"
+            data-voice-fab
+            aria-label={
+              recording ? t("녹음 중 · 놓으면 마이크 끄기") : t("누르고 말하기")
             }
-          }}
-          onKeyUp={(e) => {
-            if ([" ", "Enter"].includes(e.key)) {
-              e.preventDefault();
-              endHold(true);
+            aria-pressed={recording}
+            aria-describedby="assistant-voice-hint"
+            disabled={busy}
+            className={
+              (embedded
+                ? "relative size-12"
+                : "fixed right-4 bottom-[calc(1rem+env(safe-area-inset-bottom))] size-14") +
+              " flex shrink-0 touch-none select-none items-center justify-center rounded-full text-white shadow-lg transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 disabled:opacity-50 " +
+              (recording
+                ? "bg-red-600 ring-4 ring-red-200"
+                : "bg-emerald-700 hover:bg-emerald-800")
             }
-          }}
-          onBlur={() => {
-            if (held.current) endHold(false);
-          }}
-          onContextMenu={(e) => e.preventDefault()}
-        >
-          {phase === "connecting" ? (
-            <svg
-              aria-hidden="true"
-              className="size-6 animate-spin"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M12 3a9 9 0 1 1-9 9" />
-            </svg>
-          ) : (
+            onPointerDown={(e) => {
+              if (e.button !== 0) return;
+              e.preventDefault();
+              e.currentTarget.setPointerCapture(e.pointerId);
+              void beginHold();
+            }}
+            onPointerUp={() => endHold(true)}
+            onPointerCancel={() => endHold(false)}
+            onLostPointerCapture={() => {
+              if (held.current) endHold(false);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") endHold(false);
+              if ([" ", "Enter"].includes(e.key)) {
+                e.preventDefault();
+                if (!e.repeat) void beginHold();
+              }
+            }}
+            onKeyUp={(e) => {
+              if ([" ", "Enter"].includes(e.key)) {
+                e.preventDefault();
+                endHold(true);
+              }
+            }}
+            onBlur={() => {
+              if (held.current) endHold(false);
+            }}
+            onContextMenu={(e) => e.preventDefault()}
+          >
+            {phase === "connecting" ? (
+              <svg
+                aria-hidden="true"
+                className="size-6 animate-spin"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M12 3a9 9 0 1 1-9 9" />
+              </svg>
+            ) : (
+              <svg
+                aria-hidden="true"
+                className="size-6"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="9" y="2" width="6" height="12" rx="3" />
+                <path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-4 0h8" />
+              </svg>
+            )}
+          </button>
+        ) : (
+          <button
+            type="button"
+            data-chat-fab
+            aria-label={expanded ? t("대화 닫기") : t("대화 열기")}
+            aria-expanded={expanded}
+            aria-controls="assistant-conversation"
+            className={
+              (embedded
+                ? "relative size-12"
+                : "fixed right-4 bottom-[calc(1rem+env(safe-area-inset-bottom))] size-14") +
+              " flex shrink-0 items-center justify-center rounded-full bg-emerald-700 text-white shadow-lg transition-colors hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
+            }
+            onClick={toggleChatComposer}
+          >
             <svg
               aria-hidden="true"
               className="size-6"
@@ -1289,16 +1367,17 @@ export function VoiceAssistant({
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              <rect x="9" y="2" width="6" height="12" rx="3" />
-              <path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-4 0h8" />
+              <path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
-          )}
-        </button>
-        <span id="assistant-voice-hint" className="sr-only">
-          {t(
-            "버튼을 누르는 동안만 음성이 전달됩니다. 놓으면 마이크가 꺼집니다. 전체 대화는 옆의 응답을 눌러 펼칠 수 있습니다.",
-          )}
-        </span>
+          </button>
+        )}
+        {voiceEnabled && (
+          <span id="assistant-voice-hint" className="sr-only">
+            {t(
+              "버튼을 누르는 동안만 음성이 전달됩니다. 놓으면 마이크가 꺼집니다. 전체 대화는 옆의 응답을 눌러 펼칠 수 있습니다.",
+            )}
+          </span>
+        )}
       </div>
     </div>
   );
