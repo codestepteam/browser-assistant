@@ -72,6 +72,17 @@ test("widget voiceEnabled=false replaces the mic FAB and focuses the input", asy
   ).toBeFocused();
   const panel = page.getByRole("region", { name: "Conversation", exact: true });
   await expect(panel).toBeVisible();
+  const chrome = await panel.evaluate((el) => {
+    const style = getComputedStyle(el);
+    return {
+      borderTopWidth: style.borderTopWidth,
+      borderTopColor: style.borderTopColor,
+      boxShadow: style.boxShadow,
+    };
+  });
+  expect(chrome.borderTopWidth).toBe("1px");
+  expect(chrome.borderTopColor).toBe("rgb(226, 232, 240)");
+  expect(chrome.boxShadow).not.toBe("none");
   const fabBox = await page.locator("[data-chat-fab]").boundingBox();
   const panelBox = await panel.boundingBox();
   expect(fabBox).not.toBeNull();

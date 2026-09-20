@@ -1095,13 +1095,18 @@ export function VoiceAssistant({
         <section
           id="assistant-conversation"
           aria-label={expanded ? t("대화 내용") : t("실행 확인")}
+          style={{
+            border: "1px solid #e2e8f0",
+            boxShadow:
+              "0 2px 8px rgba(15, 23, 42, 0.06), 0 12px 32px rgba(15, 23, 42, 0.12)",
+          }}
           className={
             (embedded
               ? "mb-3 max-h-[min(45dvh,420px)] w-full"
               : voiceEnabled
                 ? "fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-1/2 max-h-[min(65dvh,640px)] w-[420px] max-w-[calc(100vw-2rem)] [transform:translateX(-50%)]"
                 : "fixed right-4 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] max-h-[min(65dvh,640px)] w-[420px] max-w-[calc(100vw-2rem)]") +
-            " flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white text-slate-800 shadow-xl"
+            " flex flex-col overflow-hidden rounded-2xl bg-white text-slate-800"
           }
         >
           <header className="flex shrink-0 items-center gap-2 border-b border-slate-100 p-3">
