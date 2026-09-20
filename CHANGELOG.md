@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Chat-only mode via `voiceEnabled={false}` / `data-voice-enabled="false"`: a chat FAB replaces the microphone, typed messages use `/chat`, and microphone permission is never requested.
+- Chat-only mode via `voiceEnabled={false}` / `data-voice-enabled="false"`: a chat FAB replaces the microphone, the floating response bar is hidden, typed messages use `/chat`, and microphone permission is never requested.
 
 ## 0.2.0 — GPT-Live and npm distribution
 

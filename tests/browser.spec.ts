@@ -65,11 +65,13 @@ test("widget voiceEnabled=false replaces the mic FAB and focuses the input", asy
   await expect(page.locator("[data-voice-fab]")).toHaveCount(0);
   const fab = page.getByRole("button", { name: "Open chat", exact: true });
   await expect(fab).toBeVisible();
-  await expect(page.locator("[data-floating-response]")).toBeVisible();
+  await expect(page.locator("[data-floating-response]")).toHaveCount(0);
   await fab.click();
   await expect(
     page.getByRole("textbox", { name: "Message the assistant" }),
   ).toBeFocused();
+  await expect(page.locator("[data-floating-response]")).toHaveCount(0);
+  await expect(page.getByText("How can I help?")).toHaveCount(0);
   expect(mediaCalls).toBe(0);
   await expect(page.getByText("Allow microphone access")).toHaveCount(0);
 });

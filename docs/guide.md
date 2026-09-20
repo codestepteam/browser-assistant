@@ -87,7 +87,7 @@ const app = createApp({
 | `chatVisibility`              | When the response strip appears: `session` (default) or `always`                    |
 | `voiceEnabled`                | Hold-to-talk voice. Default `true`. `false` shows a chat FAB instead of the mic     |
 
-With `voiceEnabled={false}`, the bottom-right control is a chat icon. Tapping it expands the conversation and focuses the composer. Microphone permission and `/live` are never requested; typed messages still use `/chat` and screen tools.
+With `voiceEnabled={false}`, the bottom-right control is a chat icon. Tapping it expands the conversation and focuses the composer. The compact floating response bar is not shown. Microphone permission and `/live` are never requested; typed messages still use `/chat` and screen tools.
 
 The plain script supports `data-server-url`, `data-session-key`, `data-locale`, `data-time-zone`, `data-title`, `data-instructions`, `data-site-context`, `data-chat-visibility`, and `data-voice-enabled`. For functions, dynamic context or long text, load the script and call `BrowserAssistant.mount(options)`. Its return value unmounts the widget; call it on logout. Remount after changing site instructions for an existing voice connection. Language/time-zone changes restart the connection and re-read the screen.
 

@@ -84,7 +84,7 @@ const app = createApp({
 | `chatVisibility`              | 채팅 응답 영역 표시. `session`(기본) 또는 `always`                |
 | `voiceEnabled`                | 음성(누르고 말하기) 사용. 기본 `true`. `false`면 대화 버튼만 표시 |
 
-`voiceEnabled={false}`이면 마이크 FAB 대신 대화 아이콘이 나타나고, 버튼을 누르면 대화창과 입력창이 열립니다. 마이크 권한·`/live` 음성 연결은 호출하지 않으며 글 입력은 `/chat`으로 화면 도구를 사용합니다.
+`voiceEnabled={false}`이면 마이크 FAB 대신 대화 아이콘이 나타나고, 버튼을 누르면 대화창과 입력창이 열립니다. 하단 응답 막대는 표시하지 않습니다. 마이크 권한·`/live` 음성 연결은 호출하지 않으며 글 입력은 `/chat`으로 화면 도구를 사용합니다.
 
 스크립트 속성은 `data-server-url`, `data-session-key`, `data-locale`, `data-time-zone`, `data-title`, `data-instructions`, `data-site-context`, `data-chat-visibility`, `data-voice-enabled`를 지원합니다. 함수나 동적인 문맥은 스크립트를 로드한 뒤 `BrowserAssistant.mount(options)`로 전달하세요. 반환 함수는 도우미를 제거하므로 로그아웃 시 호출합니다. 연결 중인 음성의 사이트 지침을 바꾸려면 다시 마운트하세요. 언어·시간대 변경은 연결을 다시 준비하고 현재 화면부터 읽습니다.
 

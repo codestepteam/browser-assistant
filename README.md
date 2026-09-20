@@ -124,7 +124,7 @@ MIT License. [Third-party notices](THIRD_PARTY_NOTICES.md).
 
 `chatVisibility` defaults to `"session"`: only the microphone is visible while idle. The response strip appears when a voice connection starts; pending confirmations and connection errors remain visible. Use `chatVisibility="always"` for a permanent entry point to text chat, or `data-chat-visibility="always"` on the script widget. Controls use the browser Popover API top layer to stay anchored to the viewport while remaining inside an open dialog's focus scope.
 
-Set `voiceEnabled={false}` (or `data-voice-enabled="false"` on the script widget) for chat-only mode. The bottom-right control becomes a chat FAB: tap it to expand the conversation and focus the text input. Microphone permission and `/live` are not used. Confirmation cards and Stop still apply to screen actions.
+Set `voiceEnabled={false}` (or `data-voice-enabled="false"` on the script widget) for chat-only mode. The bottom-right control becomes a chat FAB: tap it to expand the conversation and focus the text input. The compact floating response bar is hidden. Microphone permission and `/live` are not used. Confirmation cards and Stop still apply to screen actions.
 
 ```tsx
 <BrowserAssistant serverUrl="/assistant" voiceEnabled={false} />

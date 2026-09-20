@@ -519,6 +519,12 @@ export async function checkVoiceDisabled() {
       "[data-voice-fab]",
     ), "Mic FAB must be absent");
     require(!container.querySelector(
+      "[data-floating-response]",
+    ), "Chat-only must not show the floating response bar");
+    require(!container.textContent?.includes(
+      "무엇을 도와드릴까요?",
+    ), "Chat-only must not show the idle floating prompt");
+    require(!container.querySelector(
       '[aria-label="누르고 말하기"]',
     ), "Hold-to-talk must be hidden");
     require(!mediaCalls &&
@@ -580,6 +586,9 @@ export async function checkVoiceDisabled() {
     require(container.querySelector(
       '[aria-label="실행 중지"]',
     ), "Stop must remain available");
+    require(!container.querySelector(
+      "[data-floating-response]",
+    ), "Confirmation must not bring back the floating bar");
     return {
       ok: true,
       microphoneRequests: mediaCalls,

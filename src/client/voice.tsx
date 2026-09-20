@@ -148,6 +148,16 @@ export function VoiceAssistant({
     focusComposer.current = false;
     inputRef.current?.focus();
   }, [expanded]);
+  useEffect(() => {
+    if (voiceEnabled || !pendingAction || expandedRef.current) return;
+    expandedRef.current = true;
+    setExpanded(true);
+    saveSession(scope, {
+      messages: historyMessages.current,
+      pending: pendingRun.current,
+      open: true,
+    });
+  }, [pendingAction, voiceEnabled, scope]);
   scopeRef.current = scope;
   function stop() {
     onInterrupt?.();
@@ -1185,7 +1195,7 @@ export function VoiceAssistant({
         </section>
       )}
       <div className={embedded ? "flex items-end gap-2" : ""}>
-        {showConversation && (
+        {voiceEnabled && showConversation && (
           <div
             className={
               (embedded

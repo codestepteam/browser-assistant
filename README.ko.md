@@ -123,7 +123,7 @@ npm run test:package
 
 스크립트 설치에서는 `data-chat-visibility="always"`를 사용합니다. 마이크는 모달의 포커스 범위를 유지하면서 Popover API의 최상위 레이어에서 화면 오른쪽 아래에 고정됩니다. 모달의 이동·변형 때문에 버튼 위치가 바뀌지 않습니다.
 
-음성을 끄고 글 입력만 쓰려면 `voiceEnabled={false}`를 지정합니다. 오른쪽 아래 버튼이 대화 아이콘으로 바뀌고, 누르면 대화창이 펼쳐지며 입력창에 초점이 갑니다. 마이크 권한과 `/live` 음성 연결은 사용하지 않으며, 화면 작업의 실행 확인과 중지는 그대로입니다. 스크립트에서는 `data-voice-enabled="false"`를 사용합니다.
+음성을 끄고 글 입력만 쓰려면 `voiceEnabled={false}`를 지정합니다. 오른쪽 아래 버튼이 대화 아이콘으로 바뀌고, 누르면 대화창이 펼쳐지며 입력창에 초점이 갑니다. 하단 응답 막대는 표시하지 않습니다. 마이크 권한과 `/live` 음성 연결은 사용하지 않으며, 화면 작업의 실행 확인과 중지는 그대로입니다. 스크립트에서는 `data-voice-enabled="false"`를 사용합니다.
 
 ```tsx
 <BrowserAssistant serverUrl="/assistant" voiceEnabled={false} />
