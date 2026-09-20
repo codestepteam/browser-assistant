@@ -1,6 +1,7 @@
 import { createTranslator, type Locale } from "../i18n.js";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { toolCallSchema, type ToolCall, type ToolResult } from "../protocol.js";
+import { MarkdownMessage } from "./markdown.js";
 type SavedSession = {
   messages: Message[];
   pending: string | null;
@@ -1137,20 +1138,26 @@ export function VoiceAssistant({
                   {t("이 화면에서 하고 싶은 일을 알려주세요.")}
                 </p>
               )}
-              {messages.map((message) => (
-                <p
-                  key={message.id}
-                  className={
-                    message.role === "user"
-                      ? "ml-6 whitespace-pre-wrap break-words rounded-xl bg-emerald-50 p-3 text-sm"
-                      : message.role === "tool"
-                        ? "text-xs text-slate-500"
-                        : "mr-3 whitespace-pre-wrap break-words text-sm"
-                  }
-                >
-                  {message.text}
-                </p>
-              ))}
+              {messages.map((message) =>
+                message.role === "assistant" ? (
+                  <MarkdownMessage
+                    key={message.id}
+                    className="mr-3 text-sm text-slate-800"
+                    text={message.text}
+                  />
+                ) : (
+                  <p
+                    key={message.id}
+                    className={
+                      message.role === "user"
+                        ? "ml-6 whitespace-pre-wrap break-words rounded-xl bg-emerald-50 p-3 text-sm"
+                        : "text-xs text-slate-500"
+                    }
+                  >
+                    {message.text}
+                  </p>
+                ),
+              )}
               {working && (
                 <p role="status" className="text-xs text-emerald-700">
                   {t("화면을 확인하고 작업하고 있습니다…")}

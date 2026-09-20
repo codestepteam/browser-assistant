@@ -86,6 +86,46 @@ test("widget voiceEnabled=false replaces the mic FAB and focuses the input", asy
   expect(mediaCalls).toBe(0);
   await expect(page.getByText("Allow microphone access")).toHaveCount(0);
 });
+test("assistant transcript renders Markdown instead of raw markers", async ({
+  page,
+}) => {
+  await page.goto("/tests/browser.html");
+  await page.evaluate(async () => {
+    sessionStorage.setItem(
+      "browser-assistant:v1:/assistant:markdown",
+      JSON.stringify({
+        messages: [
+          {
+            id: "md-1",
+            role: "assistant",
+            text: "**장재휴**\n\n- 누적 구매액: **₩1,000**\n- 참고: `AB12`\n\n<script>alert(1)</script>",
+            at: new Date().toISOString(),
+          },
+        ],
+        pending: null,
+        open: false,
+      }),
+    );
+    const m = await import("/src/client/widget.tsx" as string);
+    m.mount({
+      serverUrl: "/assistant",
+      locale: "ko-KR",
+      sessionKey: "markdown",
+      voiceEnabled: false,
+    });
+  });
+  await page.getByRole("button", { name: "대화 열기", exact: true }).click();
+  const panel = page.getByRole("region", { name: "대화 내용", exact: true });
+  await expect(panel.locator("strong", { hasText: "장재휴" })).toBeVisible();
+  await expect(
+    panel.getByRole("listitem").filter({ hasText: "누적 구매액" }),
+  ).toBeVisible();
+  await expect(panel.locator("strong", { hasText: "₩1,000" })).toBeVisible();
+  await expect(panel.locator("code", { hasText: "AB12" })).toBeVisible();
+  await expect(panel.locator("script")).toHaveCount(0);
+  await expect(panel.getByText("<script>alert(1)</script>")).toBeVisible();
+  await expect(panel.getByText("**장재휴**")).toHaveCount(0);
+});
 test("pending tasks resume from a new snapshot and stop rejects late tools", async ({
   page,
 }) => {
