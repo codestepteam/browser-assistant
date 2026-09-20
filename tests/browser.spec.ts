@@ -70,6 +70,17 @@ test("widget voiceEnabled=false replaces the mic FAB and focuses the input", asy
   await expect(
     page.getByRole("textbox", { name: "Message the assistant" }),
   ).toBeFocused();
+  const panel = page.getByRole("region", { name: "Conversation", exact: true });
+  await expect(panel).toBeVisible();
+  const fabBox = await page.locator("[data-chat-fab]").boundingBox();
+  const panelBox = await panel.boundingBox();
+  expect(fabBox).not.toBeNull();
+  expect(panelBox).not.toBeNull();
+  expect(
+    Math.abs(panelBox!.x + panelBox!.width - (fabBox!.x + fabBox!.width)),
+  ).toBeLessThan(4);
+  expect(panelBox!.y + panelBox!.height).toBeLessThanOrEqual(fabBox!.y);
+  expect(fabBox!.y - (panelBox!.y + panelBox!.height)).toBeLessThan(40);
   await expect(page.locator("[data-floating-response]")).toHaveCount(0);
   await expect(page.getByText("How can I help?")).toHaveCount(0);
   expect(mediaCalls).toBe(0);

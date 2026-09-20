@@ -1097,7 +1097,9 @@ export function VoiceAssistant({
           className={
             (embedded
               ? "mb-3 max-h-[min(45dvh,420px)] w-full"
-              : "fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-1/2 max-h-[min(65dvh,640px)] w-[420px] max-w-[calc(100vw-2rem)] [transform:translateX(-50%)]") +
+              : voiceEnabled
+                ? "fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-1/2 max-h-[min(65dvh,640px)] w-[420px] max-w-[calc(100vw-2rem)] [transform:translateX(-50%)]"
+                : "fixed right-4 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] max-h-[min(65dvh,640px)] w-[420px] max-w-[calc(100vw-2rem)]") +
             " flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white text-slate-800 shadow-xl"
           }
         >
