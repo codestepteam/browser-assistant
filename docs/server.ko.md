@@ -39,6 +39,17 @@ npm start
 
 클라이언트에는 `serverUrl="http://localhost:8796"` 또는 `data-server-url="http://localhost:8796"`을 지정합니다. 별도의 프록시 경로를 만들지 않아도 로컬 연결을 시험할 수 있습니다.
 
+## 선택: Jev 섀도 판단
+
+`TYPESAFE_SHADOW=1`과 `TYPESAFE_API_KEY`를 설정하면 텍스트 채팅에서 LLM이 첫 조작을 고를 때 [TypeSafe Jev](https://docs.typesafe.ai)에게도 같은 질문을 합니다. 클릭 한 번으로 끝나는 요청인지, 어떤 컨트롤을 눌러야 하는지, 각 클릭 요소가 변경을 확정하는지 묻습니다. 응답은 Jev를 기다리지 않으며 그 결과를 사용하지 않습니다. 둘 다 끝나면 요청마다 `jev_shadow` JSON 한 줄을 출력합니다.
+
+- `jev.fastPath`: Jev 판단만으로 LLM 루프를 건너뛸 수 있었는지(높은 확신의 단일 클릭이고, 대상이 사이트 강제 확인 대상도 아니고 변경 확정으로 판단되지도 않음)
+- `targetMatch`: Jev가 LLM의 첫 클릭과 같은 컨트롤을 골랐는지
+- `confirmationGap`: LLM은 확인 없이 클릭했지만 Jev는 변경 확정 조작으로 판단했는지
+- `latencyMs`, `skipped`, `error`: 호출 시간과 비교하지 못한 이유
+
+로그에는 컨트롤 ref와 점수만 남고 요청 문장이나 화면 텍스트는 남지 않습니다. TypeSafe로는 요청 문장, 페이지 제목과 URL, 클릭 요소 이름이 전송됩니다. `TYPESAFE_MODEL` 기본값은 고정 버전 `jev-1.13.0`입니다. 음성 요청은 관찰하지 않습니다.
+
 ## 운영 배포
 
 클라이언트 배포와 서버 배포는 별개입니다. 서버는 Node.js를 실행할 수 있는 환경에서 빌드한 뒤 `npm start`로 실행합니다. 서버의 환경 변수에 AI 제공업체 API 키를 설정하고, 브라우저나 공개 저장소에 포함하지 마세요.

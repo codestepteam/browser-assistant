@@ -2,6 +2,7 @@ import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { createApp } from "./app.js";
+import { createDecisionShadow } from "./decision.js";
 const host = process.env.HOST || "127.0.0.1";
 const port = Number(process.env.PORT || 8796);
 if (
@@ -29,6 +30,8 @@ app.route(
     voiceSessionSeconds: Number(process.env.VOICE_SESSION_SECONDS || 600),
     voiceIdleSeconds: Number(process.env.VOICE_IDLE_SECONDS || 60),
     logger: (entry) => console.log(JSON.stringify(entry)),
+    shadow:
+      process.env.TYPESAFE_SHADOW === "1" ? createDecisionShadow() : undefined,
   }),
 );
 serve({ fetch: app.fetch, hostname: host, port }, () =>
