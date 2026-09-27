@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { test } from "node:test";
-import { MarkdownMessage } from "../src/client/markdown.js";
+import {
+  MarkdownMessage,
+  markdownToPlainText,
+} from "../src/client/markdown.js";
 
 function html(text: string) {
   return renderToStaticMarkup(
@@ -40,4 +43,14 @@ test("markdown output is React-escaped and never injects HTML", () => {
 test("plain captions stay a single paragraph", () => {
   const markup = html("공실만 모아뒀어요.");
   assert.match(markup, /<p class="break-words">공실만 모아뒀어요\.<\/p>/);
+});
+
+test("floating preview drops markdown markers", () => {
+  assert.equal(
+    markdownToPlainText(
+      "**김민아** 고객을 찾았어요.\n\n- 도시: **서울**\n- 코드: `AB12`\n1. *첫* 단계",
+    ),
+    "김민아 고객을 찾았어요. 도시: 서울 코드: AB12 첫 단계",
+  );
+  assert.equal(markdownToPlainText("2 * 3 = 6"), "2 * 3 = 6");
 });

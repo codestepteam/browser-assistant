@@ -98,6 +98,22 @@ function flushList(
   );
 }
 
+export function markdownToPlainText(text: string) {
+  return text
+    .replace(/\r\n/g, "\n")
+    .split("\n")
+    .map((line) =>
+      line
+        .replace(/^(?:[-*+]|\d+[.)])\s+/, "")
+        .replace(/`([^`]+)`/g, "$1")
+        .replace(/(\*\*|__)(.+?)\1/g, "$2")
+        .replace(/\*([^*\s][^*]*)\*/g, "$1")
+        .trim(),
+    )
+    .filter(Boolean)
+    .join(" ");
+}
+
 export function MarkdownMessage({
   text,
   className,
