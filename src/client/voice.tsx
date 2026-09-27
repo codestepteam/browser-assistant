@@ -1,7 +1,7 @@
 import { createTranslator, type Locale } from "../i18n.js";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { toolCallSchema, type ToolCall, type ToolResult } from "../protocol.js";
-import { MarkdownMessage } from "./markdown.js";
+import { MarkdownMessage, markdownToPlainText } from "./markdown.js";
 type SavedSession = {
   messages: Message[];
   pending: string | null;
@@ -1062,10 +1062,12 @@ export function VoiceAssistant({
   }
   const button =
     "rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-emerald-600 disabled:opacity-50";
-  const working = busy || phase === "working" || phase === "speaking";
+  const acting = busy || phase === "working";
+  const working = acting || phase === "speaking";
   const latestReply = [...messages]
     .reverse()
     .find((message) => message.role === "assistant")?.text;
+  const latestPreview = latestReply && markdownToPlainText(latestReply);
   const visibleVoiceError = voiceEnabled ? voiceError : "";
   const floatingText = recording
     ? t("누르는 동안 듣고 있어요. 놓으면 마이크가 꺼집니다.")
@@ -1076,12 +1078,13 @@ export function VoiceAssistant({
         ? t("실행할 내용을 확인해 주세요.")
         : phase === "connecting"
           ? t("음성 연결을 준비하고 있어요…")
-          : working
+          : acting
             ? t("화면을 확인하고 작업하고 있어요…")
-            : latestReply || t("무엇을 도와드릴까요?"));
+            : latestPreview || t("무엇을 도와드릴까요?"));
   const showConversation =
     !voiceEnabled ||
     chatVisibility === "always" ||
+    expanded ||
     phase !== "idle" ||
     busy ||
     !!pendingAction ||
@@ -1163,7 +1166,7 @@ export function VoiceAssistant({
                   </p>
                 ),
               )}
-              {working && (
+              {acting && (
                 <p role="status" className="text-xs text-emerald-700">
                   {t("화면을 확인하고 작업하고 있습니다…")}
                 </p>

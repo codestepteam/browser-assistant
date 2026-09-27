@@ -311,3 +311,142 @@ test("confirmation buttons stay visible above chat input with long history and f
   await group.getByRole("button", { name: "취소", exact: true }).click();
   await expect(group).toHaveCount(0);
 });
+
+test("voice mode keeps its chrome, typed replies and plain previews after the session", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const w = window as any;
+    const dc: any = {
+      readyState: "connecting",
+      onmessage: null,
+      send(value: string) {
+        const event = JSON.parse(value);
+        if (event.type === "session.input_audio.unmute")
+          queueMicrotask(() =>
+            w.emitLive({
+              type: "session.input_audio.unmuted",
+              client_event_id: event.event_id,
+            }),
+          );
+      },
+      close() {
+        this.readyState = "closed";
+      },
+    };
+    w.emitLive = (event: unknown) =>
+      dc.onmessage?.({ data: JSON.stringify(event) });
+    w.RTCPeerConnection = class {
+      connectionState = "new";
+      iceGatheringState = "complete";
+      localDescription: unknown;
+      addTransceiver() {
+        return { sender: { replaceTrack: async () => {} } };
+      }
+      createDataChannel() {
+        return dc;
+      }
+      async createOffer() {
+        return { type: "offer", sdp: "v=0\r\ns=offer" };
+      }
+      async setLocalDescription(offer: unknown) {
+        this.localDescription = offer;
+      }
+      async setRemoteDescription() {
+        this.connectionState = "connected";
+        dc.readyState = "open";
+        queueMicrotask(() => w.emitLive({ type: "session.started" }));
+      }
+      async getStats() {
+        return new Map();
+      }
+      close() {}
+      addEventListener() {}
+      removeEventListener() {}
+    };
+    w.AudioContext = class {
+      async resume() {}
+      async close() {}
+      createMediaStreamDestination() {
+        return {
+          stream: { getAudioTracks: () => [{ enabled: true, stop() {} }] },
+        };
+      }
+      createMediaStreamSource() {
+        return { connect() {} };
+      }
+    };
+    Object.defineProperty(navigator, "mediaDevices", {
+      configurable: true,
+      value: {
+        getUserMedia: async () => {
+          const track = { enabled: true, readyState: "live", stop() {} };
+          return { getTracks: () => [track], getAudioTracks: () => [track] };
+        },
+      },
+    });
+    HTMLMediaElement.prototype.play = async () => {};
+  });
+  await page.route("**/assistant/health", (route) =>
+    route.fulfill({
+      json: {
+        configured: true,
+        voiceApi: "live",
+        voiceIdleSeconds: 60,
+        voiceSessionSeconds: 600,
+      },
+    }),
+  );
+  await page.route("**/assistant/live", (route) =>
+    route.fulfill({ json: { sdp: "v=0\r\ns=answer", sessionId: "live" } }),
+  );
+  await page.route("**/assistant/chat", (route) =>
+    route.fulfill({
+      json: {
+        reply: "**김민아** 고객을 찾았어요.\n\n- 도시: **서울**",
+        calls: [],
+        responseItems: [],
+      },
+    }),
+  );
+  await page.goto("/tests/browser.html");
+  await page.evaluate(async () => {
+    const m = await import("/src/client/widget.tsx" as string);
+    m.mount({
+      serverUrl: "/assistant",
+      locale: "ko-KR",
+      sessionKey: "voice-chrome",
+    });
+  });
+  const fab = page.locator("[data-voice-fab]");
+  await fab.focus();
+  await page.keyboard.down(" ");
+  await expect(fab).toHaveAttribute("aria-pressed", "true");
+  const chrome = (el: Element) => {
+    const style = getComputedStyle(el);
+    return {
+      borderStyle: style.borderTopStyle,
+      boxShadow: style.boxShadow,
+    };
+  };
+  const recording = await fab.evaluate(chrome);
+  expect(recording.boxShadow).not.toBe("none");
+  await page.keyboard.up(" ");
+  const strip = page.locator("[data-floating-response]");
+  const bar = await strip
+    .locator("xpath=ancestor::div[contains(@class,'rounded-2xl')][1]")
+    .evaluate(chrome);
+  expect(bar.borderStyle).toBe("solid");
+  expect(bar.boxShadow).not.toBe("none");
+  await page.getByRole("button", { name: "대화 펼치기 또는 접기" }).click();
+  await page.getByRole("textbox", { name: "도우미에게 요청" }).fill("김민아");
+  await page.getByRole("button", { name: "메시지 보내기" }).click();
+  const panel = page.getByRole("region", { name: "대화 내용", exact: true });
+  await expect(panel.locator("strong", { hasText: "김민아" })).toBeVisible();
+  await page.waitForTimeout(200);
+  await expect(panel).toBeVisible();
+  await expect(strip).toHaveText("김민아 고객을 찾았어요. 도시: 서울");
+  await page.getByRole("button", { name: "대화 내용 접기" }).click();
+  await expect(panel).toHaveCount(0);
+  await expect(strip).toHaveCount(0);
+});
