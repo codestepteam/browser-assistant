@@ -39,6 +39,17 @@ npm start
 
 Set the client's `serverUrl` or `data-server-url` to `http://localhost:8796`. No extra proxy path is needed to try this local setup.
 
+## Optional: Jev shadow decisions
+
+Set `TYPESAFE_SHADOW=1` and `TYPESAFE_API_KEY` to ask [TypeSafe Jev](https://docs.typesafe.ai) the same first-step question the LLM answers in text chat: whether one click completes the request, which control to click, and whether each clickable control commits a change. Responses never wait for Jev or use its answer. After both finish, the server prints one `jev_shadow` JSON line per request:
+
+- `jev.fastPath`: Jev's answer would have skipped the LLM loop (single click with high confidence, target neither site-marked for confirmation nor judged as committing).
+- `targetMatch`: Jev picked the same control the LLM clicked first.
+- `confirmationGap`: the LLM clicked without asking for confirmation, but Jev judged the control as committing.
+- `latencyMs`, `skipped`, `error`: call time and why a request was not compared.
+
+Logs contain control refs and scores, not the prompt or screen text. The request body sent to TypeSafe contains the prompt, page title, URL, and clickable control labels. `TYPESAFE_MODEL` defaults to the pinned `jev-1.13.0`. Voice requests are not observed.
+
 ## Production deployment
 
 Client distribution and server deployment are separate. Build the server in a Node.js environment and run `npm start`. Configure the AI provider API key in server environment variables, never in browser code or a public repository.

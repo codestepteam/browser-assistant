@@ -10,6 +10,7 @@ import {
   realtimeSchema,
   validateContinuation,
 } from "./provider.js";
+import type { createDecisionShadow } from "./decision.js";
 export type RequestLog = {
   requestId: string;
   method: string;
@@ -19,6 +20,8 @@ export type RequestLog = {
 };
 export type ServerOptions = {
   provider?: ReturnType<typeof createAssistantProvider>;
+  /** Logs Jev's decision next to the LLM's without changing responses. */
+  shadow?: Pick<ReturnType<typeof createDecisionShadow>, "observe">;
   token?: string;
   origins?: string[];
   /** Return an authenticated user ID, or null. Never trust a browser-supplied user ID directly. */
@@ -189,7 +192,9 @@ export function createApp(options: ServerOptions = {}) {
   app.post("/chat", async (c) => {
     const input = chatSchema.parse(await c.req.json());
     validateContinuation(input);
-    return c.json(await provider.chat(input, c.req.raw.signal));
+    const pending = provider.chat(input, c.req.raw.signal);
+    options.shadow?.observe(input, pending, c.get("requestId"));
+    return c.json(await pending);
   });
   app.post("/realtime", async (c) => {
     const input = realtimeSchema.parse(await c.req.json());

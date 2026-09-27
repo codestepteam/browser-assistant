@@ -37,7 +37,7 @@ export const realtimeSchema = siteSchema.extend({
 });
 export type ChatInput = z.infer<typeof chatSchema>;
 export type RealtimeInput = z.infer<typeof realtimeSchema>;
-const redact = (text: string) =>
+export const redact = (text: string) =>
   text.replace(/\d{6}[-\s]?[1-8]\d{6}/g, "[redacted]");
 export function buildInstructions(
   input: Pick<
