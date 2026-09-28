@@ -48,7 +48,7 @@ npm start
 - `confirmationGap`: LLM은 확인 없이 클릭했지만 Jev는 변경 확정 조작으로 판단했는지
 - `latencyMs`, `skipped`, `error`: 호출 시간과 비교하지 못한 이유
 
-로그에는 컨트롤 ref와 점수만 남고 요청 문장이나 화면 텍스트는 남지 않습니다. TypeSafe로는 요청 문장, 페이지 제목과 URL, 클릭 요소 이름이 전송됩니다. `TYPESAFE_MODEL` 기본값은 고정 버전 `jev-1.13.0`입니다. 음성 요청은 관찰하지 않습니다.
+서버가 시작되면 작은 요청을 하나 보내 `jev_shadow_ready` 줄에 `ok`, 실제 응답한 모델, `latencyMs`(실패 시 `http_401`, `missing_key` 같은 `error`)를 출력합니다. 로그에는 컨트롤 ref, Jev와 LLM이 고른 컨트롤 이름(`targetName`), 점수, Jev `inputTokens`가 남고, 요청 문장이나 그 밖의 화면 텍스트는 남지 않습니다. TypeSafe로는 요청 문장, 페이지 제목과 URL, 클릭 요소 이름이 전송됩니다. `TYPESAFE_MODEL` 기본값은 고정 버전 `jev-1.13.0`입니다. 음성 요청은 관찰하지 않습니다.
 
 ## 운영 배포
 

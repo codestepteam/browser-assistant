@@ -24,6 +24,7 @@ export type ShadowRecord = {
   requestId?: string;
   model?: string;
   latencyMs?: number;
+  inputTokens?: number;
   controls?: number;
   skipped?: string;
   error?: string;
@@ -31,6 +32,7 @@ export type ShadowRecord = {
     intent: string;
     intentConfidence: number;
     target: string | null;
+    targetName?: string;
     targetConfidence: number;
     targetCommit: number | null;
     fastPath: boolean;
@@ -39,6 +41,7 @@ export type ShadowRecord = {
     tool: string;
     action?: string;
     ref?: string;
+    targetName?: string;
     requireConfirmation?: boolean;
     commit?: number | null;
   };
@@ -189,6 +192,7 @@ const answersSchema = z.object({
       noul: z.number().optional(),
     }),
   ),
+  usage: z.object({ input_tokens: z.number() }).optional(),
 });
 
 function llmDecision(
@@ -261,6 +265,58 @@ export function createDecisionShadow(
 
   return {
     configured: () => !!key()?.trim(),
+    /** One tiny request to confirm the key, model, and round-trip time. */
+    async check(): Promise<{
+      event: string;
+      model: string;
+      ok: boolean;
+      latencyMs?: number;
+      error?: string;
+    }> {
+      const base = { event: "jev_shadow_ready", model };
+      if (!key()?.trim()) return { ...base, ok: false, error: "missing_key" };
+      const started = Date.now();
+      try {
+        const response = await shadowFetch(
+          "https://api.typesafe.ai/v1/systemone",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${key()!.trim()}`,
+              "Content-Type": "application/json",
+            },
+            signal: AbortSignal.timeout(options.timeoutMs ?? 5000),
+            body: JSON.stringify({
+              model,
+              state: "Open the settings page.",
+              questions: {
+                ping: {
+                  type: "noul",
+                  instructions: "Is this a request to open a page?",
+                },
+              },
+            }),
+          },
+        );
+        const latencyMs = Date.now() - started;
+        if (!response.ok)
+          return {
+            ...base,
+            ok: false,
+            latencyMs,
+            error: `http_${response.status}`,
+          };
+        const result = answersSchema.parse(await response.json());
+        return { ...base, ok: true, model: result.model, latencyMs };
+      } catch (error) {
+        return {
+          ...base,
+          ok: false,
+          latencyMs: Date.now() - started,
+          error: (error as Error).name || "failed",
+        };
+      }
+    },
     observe(
       input: ChatInput,
       pending: Promise<ChatResult>,
@@ -325,16 +381,20 @@ export function createDecisionShadow(
             ...base,
             model: jev.value.model,
             latencyMs: jev.value.latencyMs,
+            inputTokens: jev.value.usage?.input_tokens,
             controls: controls.length,
             jev: {
               intent: intent?.choice ?? "missing",
               intentConfidence: intent?.confidence ?? 0,
               target: targetRef,
+              targetName: targetControl?.name,
               targetConfidence: target?.confidence ?? 0,
               targetCommit,
               fastPath,
             },
-            llm: chosen,
+            llm: llmControl
+              ? { ...chosen, targetName: llmControl.name }
+              : chosen,
             targetMatch:
               chosen.action === "click" && targetRef
                 ? chosen.ref === targetRef

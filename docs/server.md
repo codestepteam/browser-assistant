@@ -48,7 +48,7 @@ Set `TYPESAFE_SHADOW=1` and `TYPESAFE_API_KEY` to ask [TypeSafe Jev](https://doc
 - `confirmationGap`: the LLM clicked without asking for confirmation, but Jev judged the control as committing.
 - `latencyMs`, `skipped`, `error`: call time and why a request was not compared.
 
-Logs contain control refs and scores, not the prompt or screen text. The request body sent to TypeSafe contains the prompt, page title, URL, and clickable control labels. `TYPESAFE_MODEL` defaults to the pinned `jev-1.13.0`. Voice requests are not observed.
+At startup the server sends one tiny request and prints a `jev_shadow_ready` line with `ok`, the resolved model, and `latencyMs` (or `error`, such as `http_401` or `missing_key`). Logs contain control refs, the labels of the controls Jev and the LLM picked (`targetName`), scores, and Jev `inputTokens`; they never contain the prompt or other screen text. The request body sent to TypeSafe contains the prompt, page title, URL, and clickable control labels. `TYPESAFE_MODEL` defaults to the pinned `jev-1.13.0`. Voice requests are not observed.
 
 ## Production deployment
 

@@ -13,6 +13,9 @@ if (
   throw new Error(
     "외부 주소로 실행하려면 SERVER_TOKEN과 인증 프록시를 설정하세요.",
   );
+const shadow =
+  process.env.TYPESAFE_SHADOW === "1" ? createDecisionShadow() : undefined;
+void shadow?.check().then((result) => console.log(JSON.stringify(result)));
 const app = new Hono();
 app.get("/widget.js", serveStatic({ path: "./dist/widget.js" }));
 app.get("/assets/*", serveStatic({ root: "./dist/examples" }));
@@ -30,8 +33,7 @@ app.route(
     voiceSessionSeconds: Number(process.env.VOICE_SESSION_SECONDS || 600),
     voiceIdleSeconds: Number(process.env.VOICE_IDLE_SECONDS || 60),
     logger: (entry) => console.log(JSON.stringify(entry)),
-    shadow:
-      process.env.TYPESAFE_SHADOW === "1" ? createDecisionShadow() : undefined,
+    shadow,
   }),
 );
 serve({ fetch: app.fetch, hostname: host, port }, () =>

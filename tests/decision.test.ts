@@ -187,6 +187,9 @@ test("shadow logs agreement with the LLM's first action and eligible fast paths"
   assert.equal(question.commit_1.type, "noul");
   assert.equal(logs[0].targetMatch, true);
   assert.equal(logs[0].jev?.fastPath, true);
+  assert.equal(logs[0].jev?.targetName, "Settings");
+  assert.equal(logs[0].llm?.targetName, "Settings");
+  assert.equal(logs[0].inputTokens, 900);
   assert.equal(logs[0].confirmationGap, false);
 });
 
@@ -212,6 +215,27 @@ test("shadow never delays or breaks the chat response", async () => {
   release(new Response("overloaded", { status: 529 }));
   await logged;
   assert.equal(logs[0].error, "http_529");
+});
+
+test("startup check reports key, model and failures", async () => {
+  const ok = createDecisionShadow({
+    apiKey: () => "jev-key",
+    fetch: async () =>
+      Response.json({
+        model: "jev-1.13.0",
+        answers: { ping: { type: "noul", noul: 0.97 } },
+      }),
+  });
+  assert.equal((await ok.check()).ok, true);
+  const denied = createDecisionShadow({
+    apiKey: () => "bad",
+    fetch: async () => new Response("", { status: 401 }),
+  });
+  assert.equal((await denied.check()).error, "http_401");
+  assert.equal(
+    (await createDecisionShadow({ apiKey: () => "" }).check()).error,
+    "missing_key",
+  );
 });
 
 test("shadow only runs on the first screen of a request", async () => {
