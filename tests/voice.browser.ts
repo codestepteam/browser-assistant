@@ -454,3 +454,153 @@ export async function checkVoiceHold() {
     HTMLMediaElement.prototype.play = original.play;
   }
 }
+
+/** Chat-only UI: no microphone, no /live, FAB opens the composer. */
+export async function checkVoiceDisabled() {
+  const require = (value: unknown, message: string) => {
+    if (!value) throw new Error(message);
+  };
+  const tick = (ms = 20) => new Promise((resolve) => setTimeout(resolve, ms));
+  const until = async (check: () => unknown) => {
+    for (let n = 0; n < 200; n++) {
+      if (check()) return;
+      await tick();
+    }
+    throw new Error("Chat-only UI timed out");
+  };
+  const original = {
+    fetch: window.fetch,
+    mediaDevices: Object.getOwnPropertyDescriptor(navigator, "mediaDevices"),
+  };
+  const scope = "browser-assistant:v1:/assistant:chat-only-test";
+  sessionStorage.removeItem(scope);
+  const requests: string[] = [];
+  let mediaCalls = 0;
+  Object.defineProperty(navigator, "mediaDevices", {
+    configurable: true,
+    value: {
+      getUserMedia: async () => {
+        mediaCalls++;
+        throw new Error("microphone should not be requested");
+      },
+    },
+  });
+  window.fetch = async (input, options) => {
+    const path = new URL(String(input), location.href).pathname;
+    requests.push(path);
+    if (path === "/assistant/chat")
+      return Response.json({
+        reply: "글 입력만 사용합니다.",
+        calls: [],
+        responseItems: [],
+      });
+    if (path === "/assistant/live")
+      throw new Error("/live must not be called when voice is disabled");
+    return original.fetch(input, options);
+  };
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  let mounted = true;
+  try {
+    root.render(
+      createElement(VoiceAssistant, {
+        locale: "ko-KR",
+        serverUrl: "/assistant",
+        sessionKey: "chat-only-test",
+        voiceEnabled: false,
+        context: {},
+        onCommand: async () => ({ ok: true, state: {} }),
+      }),
+    );
+    await until(() => container.querySelector("[data-chat-fab]"));
+    await tick(50);
+    require(!container.querySelector(
+      "[data-voice-fab]",
+    ), "Mic FAB must be absent");
+    require(!container.querySelector(
+      "[data-floating-response]",
+    ), "Chat-only must not show the floating response bar");
+    require(!container.textContent?.includes(
+      "무엇을 도와드릴까요?",
+    ), "Chat-only must not show the idle floating prompt");
+    require(!container.querySelector(
+      '[aria-label="누르고 말하기"]',
+    ), "Hold-to-talk must be hidden");
+    require(!mediaCalls &&
+      !requests.includes(
+        "/assistant/live",
+      ), "Idle chat-only must not use the microphone or /live");
+    const fab = container.querySelector<HTMLButtonElement>("[data-chat-fab]")!;
+    require(fab.getAttribute("aria-label") ===
+      "대화 열기", "Chat FAB must use the open-chat label");
+    fab.click();
+    await until(
+      () =>
+        container.querySelector('[aria-label="대화 내용"]') &&
+        document.activeElement ===
+          container.querySelector('[aria-label="도우미에게 요청"]'),
+    );
+    require(!mediaCalls &&
+      !requests.includes(
+        "/assistant/live",
+      ), "Opening chat must not request microphone or /live");
+    require(!container.textContent?.includes(
+      "마이크 권한을 허용한 뒤",
+    ), "Mic permission banner must stay hidden");
+    const chat = container.querySelector<HTMLInputElement>(
+      '[aria-label="도우미에게 요청"]',
+    )!;
+    Object.getOwnPropertyDescriptor(
+      HTMLInputElement.prototype,
+      "value",
+    )!.set!.call(chat, "글로만 요청");
+    chat.dispatchEvent(new Event("input", { bubbles: true }));
+    await tick();
+    container
+      .querySelector<HTMLButtonElement>('[aria-label="메시지 보내기"]')!
+      .click();
+    await until(() => container.textContent?.includes("글 입력만 사용합니다."));
+    require(requests.includes("/assistant/chat"), "Typed input must use /chat");
+    require(!requests.includes("/assistant/live") &&
+      !mediaCalls, "Typed input must skip voice paths");
+    root.render(
+      createElement(VoiceAssistant, {
+        locale: "ko-KR",
+        serverUrl: "/assistant",
+        sessionKey: "chat-only-test",
+        voiceEnabled: false,
+        context: {},
+        onCommand: async () => ({ ok: true, state: {} }),
+        pendingAction: createElement(
+          "div",
+          { "aria-label": "검증용 확인" },
+          "실행할 내용",
+        ),
+      }),
+    );
+    await tick();
+    require(container.querySelector(
+      '[aria-label="검증용 확인"]',
+    ), "Confirmation UI must remain available");
+    require(container.querySelector(
+      '[aria-label="실행 중지"]',
+    ), "Stop must remain available");
+    require(!container.querySelector(
+      "[data-floating-response]",
+    ), "Confirmation must not bring back the floating bar");
+    return {
+      ok: true,
+      microphoneRequests: mediaCalls,
+      liveRequests: requests.filter((p) => p === "/assistant/live").length,
+      chatRequests: requests.filter((p) => p === "/assistant/chat").length,
+    };
+  } finally {
+    if (mounted) root.unmount();
+    container.remove();
+    window.fetch = original.fetch;
+    if (original.mediaDevices)
+      Object.defineProperty(navigator, "mediaDevices", original.mediaDevices);
+    else delete (navigator as unknown as Record<string, unknown>).mediaDevices;
+  }
+}

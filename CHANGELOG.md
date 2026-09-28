@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Chat-only mode via `voiceEnabled={false}` / `data-voice-enabled="false"`: a chat FAB replaces the microphone, the floating response bar is hidden, typed messages use `/chat`, and microphone permission is never requested.
+- Assistant transcript messages render a safe Markdown subset (bold, italic, lists, line breaks, inline code) as React nodes.
+- Voice mode fixes: border, shadow, ring and focus-outline utilities now render inside the shadow root (the response strip, microphone recording ring and controls were unstyled); an expanded conversation stays open after a typed reply or voice idle closure; the response strip previews replies without Markdown markers; "working" is no longer shown while the assistant is only speaking.
+
 ## 0.2.0 — GPT-Live and npm distribution
 
 - GPT-Live voice with a GPT-5.6 Luna task backend, hold-to-talk input and idle closure.

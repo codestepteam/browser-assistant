@@ -29,6 +29,7 @@ if (script?.dataset.serverUrl) {
       script.dataset.chatVisibility === "always"
         ? ("always" as const)
         : ("session" as const),
+    voiceEnabled: script.dataset.voiceEnabled !== "false",
   };
   if (document.readyState === "loading")
     document.addEventListener("DOMContentLoaded", () => mount(options), {
